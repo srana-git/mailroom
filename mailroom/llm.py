@@ -268,7 +268,7 @@ class CohereBackend:
         ]
         tokens_in, tokens_out = _usage_of(response)
         return LLMResponse(
-            text=getattr(message, "content", None),
+            text=_text_of(getattr(message, "content", None)),
             tool_calls=tool_calls,
             tool_plan=getattr(message, "tool_plan", None),
             tokens_in=tokens_in,
@@ -353,6 +353,15 @@ def _is_retryable(exc: Exception) -> bool:
     if status is not None:
         return status in RETRYABLE_STATUS
     return isinstance(exc, httpx.HTTPError)
+
+
+def _text_of(content: Any) -> str | None:
+    """Join the text blocks of a v2 chat message; the API returns a list, not a string."""
+    if content is None or isinstance(content, str):
+        return content
+    parts = [getattr(block, "text", None) for block in content]
+    text = "".join(p for p in parts if p)
+    return text or None
 
 
 def _usage_of(response: Any) -> tuple[int, int]:
