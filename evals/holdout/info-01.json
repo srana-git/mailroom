@@ -1,0 +1,22 @@
+{
+  "id": "info-01",
+  "family": "info",
+  "language": "en",
+  "letter_text": "Exemple Assurances\nService des sinistres\n\nExemple Conseil Inc.\n1199999005\nGatineau (Québec)\n\nOctober 5, 2026\n\nSubject: For information - new handler for your claims file\n\nDear client,\n\nYour claims file has been transferred to a new handler. The contact address for the file is now sinistres@exemple-assurances.example.\n\nThis notice is for information only. No action is required and there is nothing to confirm.\n\nService des sinistres",
+  "gold": {
+    "issuer": "Exemple Assurances",
+    "letter_type": "information_only",
+    "language": "en",
+    "reference_number": "1199999005",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-INF-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

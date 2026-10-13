@@ -1,0 +1,22 @@
+{
+  "id": "payroll-01",
+  "family": "payroll",
+  "language": "en",
+  "letter_text": "Agence du revenu du Canada\nDirection des retenues sur la paie\n\nExemple Logistique Inc.\n1199999001\nMontréal (Québec)\n\nOctober 8, 2026\n\nSubject: Remittance discrepancy for the period ending September 30, 2026\n\nDear client,\n\nThe remittance we received for the period ending September 30, 2026 does not match the return filed for that period.\n\nAccount: 1199999001-RP0002\nReference: ARC-2026-62410\nAmount remitted: $5,120.00 CAD\nAmount on the return: $5,690.00 CAD\n\nThe shortfall is $570.00 CAD. Please reconcile your payroll account and remit the shortfall by November 7, 2026.\n\nDirection des retenues sur la paie",
+  "gold": {
+    "issuer": "Agence du revenu du Canada",
+    "letter_type": "payroll_remittance",
+    "language": "en",
+    "reference_number": "ARC-2026-62410",
+    "amount_due": 570.0,
+    "currency": "CAD",
+    "due_date": "2026-11-07",
+    "required_action": "update_payroll",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-PAY-001"],
+  "gold_action_kind": "file",
+  "gold_needs_human": false
+}

@@ -21,7 +21,14 @@ from pathlib import Path
 from typing import Any
 
 from ..agent import Triager
-from ..config import EVAL_CONFIGS, EvalConfig, Settings, estimate_cost_usd
+from ..config import (
+    DEFAULT_EVAL_SET,
+    EVAL_CONFIGS,
+    EVAL_SETS,
+    EvalConfig,
+    Settings,
+    estimate_cost_usd,
+)
 from ..indexer import PlaybookIndex
 from ..models import TriageResult, TriageStatus
 from ..queue import ActionQueue
@@ -72,7 +79,7 @@ def load_golden(golden_dir: Path, limit: int | None = None) -> list[GoldenCase]:
 
 
 class EvalHarness:
-    """Drives one eval config over the golden set."""
+    """Drives one eval config over one letter set."""
 
     def __init__(
         self,
@@ -81,22 +88,31 @@ class EvalHarness:
         backend: Any,
         config: EvalConfig,
         progress: Callable[[str], None] | None = None,
+        case_set: str = DEFAULT_EVAL_SET,
     ) -> None:
         if getattr(backend, "name", "") == "fake" or settings.is_fake:
             raise RuntimeError(
                 "the eval refuses to run on the fake backend: its numbers would be meaningless. "
                 "Set COHERE_API_KEY (or store it with `pass insert apis/cohere`) and run again."
             )
+        if case_set not in EVAL_SETS:
+            raise ValueError(f"unknown letter set '{case_set}'. Use one of: {', '.join(EVAL_SETS)}")
         self.settings = settings
         self.backend = backend
         self.config = config
+        self.case_set = case_set
         self.progress = progress or (lambda _message: None)
+
+    @property
+    def cases_dir(self) -> Path:
+        """The directory the letters are read from, chosen by `--set`."""
+        return self.settings.golden_dir if self.case_set == "golden" else self.settings.holdout_dir
 
     def run(self, *, limit: int | None = None) -> dict[str, Any]:
         settings = self.settings
-        cases = load_golden(settings.golden_dir, limit=limit)
+        cases = load_golden(self.cases_dir, limit=limit)
         if not cases:
-            raise RuntimeError(f"no golden cases under {settings.golden_dir}")
+            raise RuntimeError(f"no golden cases under {self.cases_dir}")
 
         index_meta = self._ensure_index()
         registry = load_registry(settings.registry_path)
@@ -141,6 +157,7 @@ class EvalHarness:
 
         payload = {
             "config": self.config.name,
+            "set": self.case_set,
             "run_date": date.today().isoformat(),
             "backend": getattr(self.backend, "name", "unknown"),
             "models": {
@@ -238,29 +255,39 @@ def _metrics_block(per_letter: list[dict[str, Any]]) -> dict[str, Any]:
 # -- output ----------------------------------------------------------------
 
 
-def results_path(settings: Settings, config: EvalConfig, run_date: str) -> Path:
-    return settings.results_dir / f"{run_date}-{config.name}.json"
+def results_path(settings: Settings, config: EvalConfig, run_date: str, case_set: str) -> Path:
+    return settings.results_dir / _results_name(config.name, case_set, run_date)
+
+
+def _results_name(config_name: str, case_set: str, run_date: str) -> str:
+    """Golden results keep their old file name; other sets carry the set suffix."""
+    suffix = "" if case_set == DEFAULT_EVAL_SET else f"-{case_set}"
+    return f"{run_date}-{config_name}{suffix}.json"
 
 
 def write_results(settings: Settings, payload: dict[str, Any]) -> Path:
     settings.results_dir.mkdir(parents=True, exist_ok=True)
-    path = settings.results_dir / f"{payload['run_date']}-{payload['config']}.json"
+    name = _results_name(
+        str(payload["config"]), str(payload.get("set", DEFAULT_EVAL_SET)), str(payload["run_date"])
+    )
+    path = settings.results_dir / name
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return path
 
 
 def load_results(settings: Settings) -> list[dict[str, Any]]:
-    """Every result file on disk, oldest first, one per config (newest wins)."""
+    """Every result file on disk, oldest first, one per config-and-set (newest wins)."""
     if not settings.results_dir.exists():
         return []
-    latest: dict[str, dict[str, Any]] = {}
+    latest: dict[tuple[str, str], dict[str, Any]] = {}
     for path in sorted(settings.results_dir.glob("*.json")):
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             continue
-        latest[str(payload.get("config"))] = payload
-    return [latest[name] for name in sorted(latest)]
+        key = (str(payload.get("config")), str(payload.get("set", DEFAULT_EVAL_SET)))
+        latest[key] = payload
+    return [latest[key] for key in sorted(latest)]
 
 
 __all__ = [

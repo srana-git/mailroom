@@ -1,0 +1,22 @@
+{
+  "id": "registry-01",
+  "family": "registry",
+  "language": "fr",
+  "letter_text": "Registraire des entreprises\nService de l'immatriculation\n\nBoulangerie Exemple Ltée\n1199999002\nQuébec (Québec)\n\nLe 4 octobre 2026\n\nObjet : Rappel - déclaration annuelle à produire\n\nMadame, Monsieur,\n\nVotre déclaration annuelle au registre des entreprises n'a pas été reçue. Elle devait être produite le 30 septembre 2026.\n\nNuméro d'entreprise du Québec : 1199999002\n\nVeuillez produire votre déclaration dans les plus brefs délais afin d'éviter la radiation de votre immatriculation.\n\nService de l'immatriculation",
+  "gold": {
+    "issuer": "Registraire des entreprises",
+    "letter_type": "registry_declaration_reminder",
+    "language": "fr",
+    "reference_number": "1199999002",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "file_declaration",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-REG-001", "PB-REG-002"],
+  "gold_action_kind": "file",
+  "gold_needs_human": false
+}

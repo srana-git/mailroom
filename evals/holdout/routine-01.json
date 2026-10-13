@@ -1,0 +1,22 @@
+{
+  "id": "routine-01",
+  "family": "routine",
+  "language": "en",
+  "letter_text": "Retraite Québec\nDirection des prestations\n\nExemple Média Inc.\n1199999004\nMontréal (Québec)\n\nOctober 5, 2026\n\nSubject: 2027 contribution rate for employer accounts\n\nDear employer,\n\nThe contribution rate that applies to your account is reviewed each year. For 2027 the rate is unchanged and a copy of the schedule is available on our portal.\n\nNo reply and no payment are needed for this notice.\n\nPlease keep this notice with your file.\n\nDirection des prestations",
+  "gold": {
+    "issuer": "Retraite Québec",
+    "letter_type": "routine_notice",
+    "language": "en",
+    "reference_number": "1199999004",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

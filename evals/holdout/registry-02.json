@@ -1,0 +1,22 @@
+{
+  "id": "registry-02",
+  "family": "registry",
+  "language": "en",
+  "letter_text": "Registraire des entreprises\nDirection des entreprises\n\nExemple Conseil Inc.\n1199999005\nGatineau (Québec)\n\nOctober 1, 2026\n\nSubject: Confirmation - annual declaration received\n\nDear client,\n\nWe confirm receipt of your annual declaration for the period ending August 31, 2026. Your registration is in good standing.\n\nRegistration number: 1199999005\n\nNo further step is required for this period.\n\nDirection des entreprises",
+  "gold": {
+    "issuer": "Registraire des entreprises",
+    "letter_type": "routine_notice",
+    "language": "en",
+    "reference_number": "1199999005",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

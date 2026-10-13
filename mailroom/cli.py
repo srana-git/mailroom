@@ -21,7 +21,7 @@ import typer
 
 from .agent import Triager
 from .audit import read_run, summarize_run
-from .config import EVAL_CONFIGS, Settings, load_api_key
+from .config import DEFAULT_EVAL_SET, EVAL_CONFIGS, EVAL_SETS, Settings, load_api_key
 from .evaluation import report
 from .evaluation.harness import EvalHarness, load_results, write_results
 from .fake import FakeBackend
@@ -354,6 +354,11 @@ def _decide(settings: Settings, item_id: str, *, approve_it: bool, note: str | N
 def eval(  # noqa: A001 - the command is named eval on purpose
     ctx: typer.Context,
     config: str = typer.Option(None, "--config", help="A, B or C. Default: all three, in order."),
+    case_set: str = typer.Option(
+        DEFAULT_EVAL_SET,
+        "--set",
+        help="Which letters to score: 'golden' (default) or 'holdout'.",
+    ),
     limit: int = typer.Option(None, "--limit", help="Score only the first N golden letters."),
     rate_limit: int = typer.Option(
         None, "--rate-limit", help="Requests per minute ceiling. Default: 15."
@@ -372,6 +377,12 @@ def eval(  # noqa: A001 - the command is named eval on purpose
         typer.echo(f"wrote {path} from {len(payloads)} result file(s)")
         return
 
+    if case_set not in EVAL_SETS:
+        typer.echo(
+            f"Unknown letter set {case_set}. Use one of: {', '.join(EVAL_SETS)}.", err=True
+        )
+        raise typer.Exit(code=2)
+
     names = [config.upper()] if config else list(EVAL_CONFIGS)
     unknown = [name for name in names if name not in EVAL_CONFIGS]
     if unknown:
@@ -388,12 +399,13 @@ def eval(  # noqa: A001 - the command is named eval on purpose
     written: list[Path] = []
     for name in names:
         chosen = EVAL_CONFIGS[name]
-        typer.echo(f"config {name}: {chosen.describe()}")
+        typer.echo(f"config {name}: {chosen.describe()} (set {case_set})")
         try:
             harness = EvalHarness(
                 settings=effective,
                 backend=backend,
                 config=chosen,
+                case_set=case_set,
                 progress=lambda message: typer.echo(f"  {message}"),
             )
             payload = harness.run(limit=limit)

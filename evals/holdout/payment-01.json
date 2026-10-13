@@ -1,0 +1,22 @@
+{
+  "id": "payment-01",
+  "family": "payment",
+  "language": "fr",
+  "letter_text": "Ville de Québec\nService de la taxation\n\nExemple Toiture SENC\n1199999003\nLaval (Québec)\n\nLe 2 octobre 2026\n\nObjet : Compte de taxes - versement exigible\n\nMadame, Monsieur,\n\nLe versement de taxes municipales de votre immeuble arrive à échéance le 3 novembre 2026.\n\nCompte : 1199999003-QC\nMontant exigible : 2 145,75 $ CAD\n\nVeuillez acquitter ce montant avant la date limite afin d'éviter les intérêts.\n\nService de la taxation",
+  "gold": {
+    "issuer": "Ville de Québec",
+    "letter_type": "payment_demand",
+    "language": "fr",
+    "reference_number": "1199999003-QC",
+    "amount_due": 2145.75,
+    "currency": "CAD",
+    "due_date": "2026-11-03",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-MUN-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

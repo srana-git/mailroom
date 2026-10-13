@@ -1,0 +1,22 @@
+{
+  "id": "info-02",
+  "family": "info",
+  "language": "fr",
+  "letter_text": "Exemple Banque\nBusiness services\n\nExemple Média Inc.\n1199999004\nMontréal (Québec)\n\nLe 6 octobre 2026\n\nObjet : Avis d'information - nouveau taux de dépôt\n\nMadame, Monsieur,\n\nLe taux d'intérêt applicable à votre compte d'entreprise a été révisé. Le nouveau taux s'applique à compter du 1er novembre 2026.\n\nCeci est un avis d'information. Aucune action n'est requise de votre part.\n\nBusiness services",
+  "gold": {
+    "issuer": "Exemple Banque",
+    "letter_type": "information_only",
+    "language": "fr",
+    "reference_number": "1199999004",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-INF-005"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

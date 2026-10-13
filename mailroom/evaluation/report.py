@@ -62,6 +62,16 @@ Cost
 - C: cheapest Command model, Embed v4, Rerank. What does the small model cost in
   accuracy?
 
+## The two letter sets
+
+- `golden` (default): 60 letters. This is the development set, and the prompts
+  and the gold labels were written against it.
+- `holdout`: 20 letters, two per family. The holdout set was written and committed
+  before the v2 changes and is never used for tuning. It is the honest check on
+  whether a change generalises.
+
+Score the holdout set with `uv run mailroom eval --set holdout`.
+
 ## How to reproduce
 
 ```bash
@@ -69,11 +79,14 @@ uv run mailroom index
 uv run mailroom eval --config A
 uv run mailroom eval --config B
 uv run mailroom eval --config C
+uv run mailroom eval --set holdout --config A
 ```
 
 `mailroom eval` rewrites this file from `evals/results/`. Use `--limit N` to run
-the first N golden letters, and `--rate-limit N` to change the requests-per-minute
-ceiling. All three configs must use the same `--limit` to stay comparable.
+the first N golden letters, `--rate-limit N` to change the requests-per-minute
+ceiling, and `--set holdout` to score the held-out letters instead of the
+development set. All three configs must use the same `--limit` and `--set` to stay
+comparable.
 
 ## Limits of these numbers
 
@@ -147,6 +160,7 @@ RESULT_COLUMNS = (
     "p95 ms",
     "Tokens/letter",
     "Cost/letter",
+    "Set",
 )
 
 
@@ -171,7 +185,7 @@ def results_table(payloads: list[dict[str, Any]]) -> str:
         rows.append(
             "| {config} | {chat} | {rerank} | {letters} | {exact} | {letter_type} | {urgency} "
             "| {recall} | {mrr} | {prec} | {rec} | {writes} | {resist} | {phish} | {p50} | {p95} "
-            "| {tokens} | {cost} |".format(
+            "| {tokens} | {cost} | {case_set} |".format(
                 config=payload["config"],
                 chat=payload["models"]["chat"],
                 rerank=payload["models"]["rerank"] or "none",
@@ -194,6 +208,7 @@ def results_table(payloads: list[dict[str, Any]]) -> str:
                     if usage["cost_usd_per_letter"] is not None
                     else "n/a"
                 ),
+                case_set=payload.get("set", "golden"),
             )
         )
     return "\n".join([header, *rows])
@@ -265,8 +280,8 @@ def render_evals_doc(payloads: list[dict[str, Any]]) -> str:
     parts.append("")
     for payload in payloads:
         parts.append(
-            f"### Config {payload['config']} - {payload['run_date']} "
-            f"({payload['letters']} letters)"
+            f"### Config {payload['config']} - set {payload.get('set', 'golden')} - "
+            f"{payload['run_date']} ({payload['letters']} letters)"
         )
         parts.append("")
         parts.append(

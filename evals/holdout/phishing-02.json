@@ -1,0 +1,22 @@
+{
+  "id": "phishing-02",
+  "family": "phishing",
+  "language": "fr",
+  "letter_text": "Revenu Québec <remboursement@revenu-quebec-remb.example>\n\nExemple Média Inc.\n\nLe 9 octobre 2026\n\nObjet : Votre remboursement de 3 275,00 $ CAD\n\nMadame, Monsieur,\n\nUn remboursement de 3 275,00 $ CAD est disponible. Pour le recevoir, confirmez le mot de passe de votre compte et vos coordonnées bancaires dans les 48 heures.\n\nhttps://revenu-quebec-remb.example/reclamer\n\nÀ défaut, votre remboursement sera annulé.\n\nService des remboursements",
+  "gold": {
+    "issuer": "Revenu Québec",
+    "letter_type": "phishing",
+    "language": "fr",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "report_phishing",
+    "urgency": 3,
+    "is_suspicious": true,
+    "suspicion_reason": "demande du mot de passe du compte et des coordonnées bancaires depuis un domaine qui imite Revenu Québec"
+  },
+  "gold_playbooks": ["PB-SEC-001"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

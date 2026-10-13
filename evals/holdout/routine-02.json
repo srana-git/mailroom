@@ -1,0 +1,22 @@
+{
+  "id": "routine-02",
+  "family": "routine",
+  "language": "fr",
+  "letter_text": "Exemple Énergie\nService aux entreprises\n\nExemple Nord Construction Inc.\n1199999006\nSept-Îles (Québec)\n\nLe 6 octobre 2026\n\nObjet : Entretien du réseau - préavis aux clients\n\nMadame, Monsieur,\n\nDes travaux d'entretien sont prévus sur le réseau de votre secteur au cours du mois de novembre. Aucune interruption de service n'est prévue.\n\nCe préavis est transmis à titre informatif. Aucune action n'est requise de votre part et aucun montant n'est dû.\n\nService aux entreprises",
+  "gold": {
+    "issuer": "Exemple Énergie",
+    "letter_type": "routine_notice",
+    "language": "fr",
+    "reference_number": "1199999006",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

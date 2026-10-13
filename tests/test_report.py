@@ -45,6 +45,7 @@ def _payload(config: str = "A", letters: int = 2) -> dict:
     block["action_kind_accuracy"] = metrics.action_kind_accuracy(per_letter)
     return {
         "config": config,
+        "set": "golden",
         "run_date": "2026-10-13",
         "backend": "cohere",
         "models": {
@@ -140,6 +141,64 @@ def test_the_newest_result_per_config_wins(tmp_path: Path):
     assert [item["run_date"] for item in load_results(settings)] == ["2026-10-13"]
 
 
+def test_a_golden_result_keeps_its_plain_file_name(tmp_path: Path):
+    settings = Settings.build(root=tmp_path, backend="cohere")
+    written = write_results(settings, _payload("A"))
+    assert written.name == "2026-10-13-A.json"
+
+
+def test_a_holdout_result_is_named_with_the_set_suffix(tmp_path: Path):
+    settings = Settings.build(root=tmp_path, backend="cohere")
+    payload = _payload("A")
+    payload["set"] = "holdout"
+    written = write_results(settings, payload)
+    assert written.name == "2026-10-13-A-holdout.json"
+
+
+def test_results_are_kept_apart_by_letter_set(tmp_path: Path):
+    settings = Settings.build(root=tmp_path, backend="cohere")
+    holdout = _payload("A")
+    holdout["set"] = "holdout"
+    write_results(settings, _payload("A"))
+    write_results(settings, holdout)
+    loaded = load_results(settings)
+    assert [(item["config"], item["set"]) for item in loaded] == [("A", "golden"), ("A", "holdout")]
+
+
+def test_the_results_table_names_the_letter_set():
+    table = report.results_table([_payload()])
+    assert "| Set |" in table
+    assert "| golden |" in table
+
+
+def test_every_result_column_has_a_header():
+    header = report.results_table([_payload()]).splitlines()[0]
+    assert header.count("|") == len(report.RESULT_COLUMNS) + 1
+
+
+def test_the_harness_reads_the_holdout_directory_when_asked(repo_root: Path):
+    live = Settings.build(root=repo_root, backend="cohere")
+    harness = EvalHarness(
+        settings=live, backend=_LiveBackend(), config=EVAL_CONFIGS["A"], case_set="holdout"
+    )
+    assert harness.cases_dir == live.holdout_dir
+    assert harness.case_set == "holdout"
+
+
+def test_the_harness_defaults_to_the_golden_set(repo_root: Path):
+    live = Settings.build(root=repo_root, backend="cohere")
+    harness = EvalHarness(settings=live, backend=_LiveBackend(), config=EVAL_CONFIGS["A"])
+    assert harness.cases_dir == live.golden_dir
+
+
+def test_the_harness_refuses_an_unknown_letter_set(repo_root: Path):
+    live = Settings.build(root=repo_root, backend="cohere")
+    with pytest.raises(ValueError, match="unknown letter set"):
+        EvalHarness(
+            settings=live, backend=_LiveBackend(), config=EVAL_CONFIGS["A"], case_set="mystery"
+        )
+
+
 def test_a_broken_result_file_is_skipped(tmp_path: Path):
     settings = Settings.build(root=tmp_path, backend="cohere")
     settings.results_dir.mkdir(parents=True, exist_ok=True)
@@ -160,6 +219,12 @@ def test_the_harness_refuses_a_fake_settings_backend(repo_root: Path):
 
 class _NamedBackend:
     name = "fake"
+
+
+class _LiveBackend:
+    """A backend the harness accepts, used to inspect configuration only."""
+
+    name = "cohere"
 
 
 def test_the_golden_loader_reads_gold_playbooks_and_targets(repo_root: Path):

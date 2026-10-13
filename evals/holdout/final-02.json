@@ -1,0 +1,22 @@
+{
+  "id": "final-02",
+  "family": "final",
+  "language": "en",
+  "letter_text": "Agence du revenu du Canada\nDirection des recouvrements\n\nExemple Nord Construction Inc.\n1199999006\nSept-Îles (Québec)\n\nOctober 7, 2026\n\nSubject: Final notice before legal action\n\nDear client,\n\nThe payroll withholding balance of $3,905.60 CAD on your account is still unpaid.\n\nAccount: 1199999006-RP0003\nReference: ARC-2026-62044\n\nIf payment is not received by November 6, 2026, we will issue a certificate and refer the account for collection.\n\nDirection des recouvrements",
+  "gold": {
+    "issuer": "Agence du revenu du Canada",
+    "letter_type": "final_notice",
+    "language": "en",
+    "reference_number": "ARC-2026-62044",
+    "amount_due": 3905.6,
+    "currency": "CAD",
+    "due_date": "2026-11-06",
+    "required_action": "pay",
+    "urgency": 5,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-TAX-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

@@ -1,0 +1,22 @@
+{
+  "id": "ocr-02",
+  "family": "ocr",
+  "language": "fr",
+  "letter_text": "Ville de Montreal\nService de la taxation\n\nExemple Toiture SENC\n1199999003\nLaval (Quebec)\n\nLe 5 octobre 2026\n\nObjet : Compte de taxes - solde impaye\n\nMadame, Monsieur,\n\nUn solde de 1 090,00 $ CAD demeure impaye sur votre compte de taxes.\n\nCompte : 1199999003-MTL\nDate limite : 9 novembre 2026\n\nService de la taxation",
+  "gold": {
+    "issuer": "Ville de Montreal",
+    "letter_type": "payment_demand",
+    "language": "fr",
+    "reference_number": "1199999003-MTL",
+    "amount_due": 1090.0,
+    "currency": "CAD",
+    "due_date": "2026-11-09",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-MUN-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

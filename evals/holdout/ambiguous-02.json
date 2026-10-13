@@ -1,0 +1,22 @@
+{
+  "id": "ambiguous-02",
+  "family": "ambiguous",
+  "language": "en",
+  "letter_text": "Exemple Télécom\nService aux entreprises\n\nExemple Conseil Inc.\n1199999005\nGatineau (Québec)\n\nOctober 1, 2026\n\nSubject: Closure of your business account - confirmation\n\nDear client,\n\nYour business account was closed on September 20, 2026. No further charges will apply and no action is required from you.\n\nThe invoice issued before the closure, in the amount of $640.00 CAD, remains payable. The date by which it must reach us is not stated in this letter.\n\nAccount: 1199999005-TE\n\nService aux entreprises",
+  "gold": {
+    "issuer": "Exemple Télécom",
+    "letter_type": "routine_notice",
+    "language": "en",
+    "reference_number": "1199999005-TE",
+    "amount_due": 640.0,
+    "currency": "CAD",
+    "due_date": null,
+    "required_action": "escalate",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-003"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

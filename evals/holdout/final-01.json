@@ -1,0 +1,22 @@
+{
+  "id": "final-01",
+  "family": "final",
+  "language": "fr",
+  "letter_text": "Revenu Québec\nDirection du recouvrement\n\nExemple Logistique Inc.\n1199999001\nMontréal (Québec)\n\nLe 9 octobre 2026\n\nObjet : Mise en demeure - solde impayé\n\nMadame, Monsieur,\n\nMalgré nos avis précédents, le solde de 6 320,00 $ CAD demeure impayé sur votre compte.\n\nCompte : 1199999001-02\nRéférence : RQ-2026-4612884\n\nÀ défaut de paiement ou d'avis d'opposition reçu au plus tard le 30 octobre 2026, nous délivrerons un certificat et procéderons au recouvrement.\n\nDirection du recouvrement",
+  "gold": {
+    "issuer": "Revenu Québec",
+    "letter_type": "final_notice",
+    "language": "fr",
+    "reference_number": "RQ-2026-4612884",
+    "amount_due": 6320.0,
+    "currency": "CAD",
+    "due_date": "2026-10-30",
+    "required_action": "pay",
+    "urgency": 5,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-TAX-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

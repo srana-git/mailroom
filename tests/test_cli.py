@@ -196,6 +196,12 @@ def test_eval_rejects_an_unknown_config(tmp_path: Path):
     assert "Unknown config" in combined(result)
 
 
+def test_eval_rejects_an_unknown_letter_set(tmp_path: Path):
+    result = run(tmp_path, "eval", "--set", "mystery")
+    assert result.exit_code == 2
+    assert "Unknown letter set" in combined(result)
+
+
 def test_models_without_a_key_says_so_and_writes_the_doc(tmp_path: Path):
     root = tmp_path / "repo"
     root.mkdir()

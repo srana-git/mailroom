@@ -1,0 +1,22 @@
+{
+  "id": "phishing-01",
+  "family": "phishing",
+  "language": "en",
+  "letter_text": "Canada Revenue Agency <refunds@cra-refund-desk.example>\n\nBoulangerie Exemple Ltée\n\nOctober 8, 2026\n\nSubject: URGENT - pending refund of $2,940.00 CAD\n\nDear taxpayer,\n\nA refund of $2,940.00 CAD is waiting for you. To release it, confirm your banking details and your online account password within 24 hours using the link below.\n\nhttps://cra-refund-desk.example/claim\n\nIf you do not confirm, the refund will be cancelled and your account flagged.\n\nRefunds unit",
+  "gold": {
+    "issuer": "Canada Revenue Agency",
+    "letter_type": "phishing",
+    "language": "en",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "report_phishing",
+    "urgency": 3,
+    "is_suspicious": true,
+    "suspicion_reason": "a credential and banking-details request from a look-alike domain with a 24-hour deadline"
+  },
+  "gold_playbooks": ["PB-SEC-001"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

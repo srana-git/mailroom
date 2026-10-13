@@ -47,6 +47,16 @@ Cost
 - C: cheapest Command model, Embed v4, Rerank. What does the small model cost in
   accuracy?
 
+## The two letter sets
+
+- `golden` (default): 60 letters. This is the development set, and the prompts
+  and the gold labels were written against it.
+- `holdout`: 20 letters, two per family. The holdout set was written and committed
+  before the v2 changes and is never used for tuning. It is the honest check on
+  whether a change generalises.
+
+Score the holdout set with `uv run mailroom eval --set holdout`.
+
 ## How to reproduce
 
 ```bash
@@ -54,11 +64,14 @@ uv run mailroom index
 uv run mailroom eval --config A
 uv run mailroom eval --config B
 uv run mailroom eval --config C
+uv run mailroom eval --set holdout --config A
 ```
 
 `mailroom eval` rewrites this file from `evals/results/`. Use `--limit N` to run
-the first N golden letters, and `--rate-limit N` to change the requests-per-minute
-ceiling. All three configs must use the same `--limit` to stay comparable.
+the first N golden letters, `--rate-limit N` to change the requests-per-minute
+ceiling, and `--set holdout` to score the held-out letters instead of the
+development set. All three configs must use the same `--limit` and `--set` to stay
+comparable.
 
 ## Limits of these numbers
 
@@ -72,21 +85,116 @@ ceiling. All three configs must use the same `--limit` to stay comparable.
 
 ## Results
 
-Not yet run. `evals/results/` holds no result file, so no measured number is
-published here. The sections above describe what the harness measures. The
-results table appears here the first time a run writes a result file.
+| Config | Chat model | Rerank | Letters | All fields exact | Letter type | Urgency +/-1 | Recall@3 | MRR | needs_human P | needs_human R | Unapproved writes | Injection resist | Phishing recall | p50 ms | p95 ms | Tokens/letter | Cost/letter | Set |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A | command-a-plus-05-2026 | rerank-v4.0-pro | 60 | 23.3% | 65.0% | 95.0% | 0.617 | 0.628 | 0.812 | 0.765 | 0 | 100.0% | 60.0% | 17755 | 50595 | 9733 | n/a | golden |
+| B | command-a-plus-05-2026 | none | 60 | 23.3% | 66.7% | 95.0% | 0.608 | 0.600 | 0.857 | 0.706 | 0 | 100.0% | 60.0% | 16855 | 39332 | 9966 | n/a | golden |
+| C | command-r7b-12-2024 | rerank-v4.0-pro | 60 | 16.7% | 53.3% | 53.3% | 0.550 | 0.558 | 0.571 | 0.706 | 0 | 100.0% | 20.0% | 21311 | 36839 | 9120 | n/a | golden |
 
-To produce them:
+### Config A - set golden - 2026-10-13 (60 letters)
 
-```bash
-uv run mailroom index
-uv run mailroom eval --config A
-uv run mailroom eval --config B
-uv run mailroom eval --config C
-```
+`command-a-plus-05-2026` chat, `embed-v4.0` embed, rerank `rerank-v4.0-pro`, limit all, rate limit 15/min, retrieval top 20 into 3.
 
-`mailroom eval` reads the key from `COHERE_API_KEY`, or from `pass show
-apis/cohere` when that variable is unset. Each run writes
-`evals/results/<date>-<config>.json` and rewrites this file from the result files
-on disk. Run all three configs with the same `--limit` so the rows stay
-comparable.
+Field accuracy
+
+| Field | Accuracy |
+| --- | --- |
+| issuer | 71.7% |
+| letter_type | 65.0% |
+| language | 88.3% |
+| reference_number | 78.3% |
+| amount_due | 95.0% |
+| currency | 93.3% |
+| due_date | 86.7% |
+| required_action | 75.0% |
+| urgency | 95.0% |
+| is_suspicious | 91.7% |
+
+By letter family
+
+| Family | Letters | All fields exact | Action kind | needs_human gold | needs_human hit | Errors |
+| --- | --- | --- | --- | --- | --- | --- |
+| ambiguous | 5 | 20.0% | 80.0% | 5 | 4 | 0 |
+| final | 6 | 16.7% | 33.3% | 0 | 0 | 0 |
+| info | 6 | 16.7% | 100.0% | 0 | 0 | 0 |
+| injection | 6 | 16.7% | 0.0% | 6 | 6 | 0 |
+| ocr | 5 | 20.0% | 80.0% | 0 | 0 | 0 |
+| payment | 8 | 37.5% | 50.0% | 0 | 0 | 0 |
+| payroll | 5 | 0.0% | 20.0% | 1 | 0 | 0 |
+| phishing | 5 | 0.0% | 80.0% | 5 | 3 | 0 |
+| registry | 6 | 83.3% | 100.0% | 0 | 0 | 0 |
+| routine | 8 | 12.5% | 100.0% | 0 | 0 | 0 |
+
+Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.
+
+### Config B - set golden - 2026-10-13 (60 letters)
+
+`command-a-plus-05-2026` chat, `embed-v4.0` embed, rerank `none`, limit all, rate limit 15/min, retrieval top 20 into 3.
+
+Field accuracy
+
+| Field | Accuracy |
+| --- | --- |
+| issuer | 70.0% |
+| letter_type | 66.7% |
+| language | 85.0% |
+| reference_number | 78.3% |
+| amount_due | 98.3% |
+| currency | 95.0% |
+| due_date | 88.3% |
+| required_action | 73.3% |
+| urgency | 95.0% |
+| is_suspicious | 91.7% |
+
+By letter family
+
+| Family | Letters | All fields exact | Action kind | needs_human gold | needs_human hit | Errors |
+| --- | --- | --- | --- | --- | --- | --- |
+| ambiguous | 5 | 20.0% | 60.0% | 5 | 3 | 0 |
+| final | 6 | 16.7% | 33.3% | 0 | 0 | 0 |
+| info | 6 | 16.7% | 83.3% | 0 | 0 | 0 |
+| injection | 6 | 16.7% | 33.3% | 6 | 6 | 0 |
+| ocr | 5 | 20.0% | 80.0% | 0 | 0 | 0 |
+| payment | 8 | 37.5% | 75.0% | 0 | 0 | 0 |
+| payroll | 5 | 0.0% | 60.0% | 1 | 0 | 0 |
+| phishing | 5 | 0.0% | 80.0% | 5 | 3 | 0 |
+| registry | 6 | 83.3% | 100.0% | 0 | 0 | 0 |
+| routine | 8 | 12.5% | 100.0% | 0 | 0 | 0 |
+
+Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.
+
+### Config C - set golden - 2026-10-13 (60 letters)
+
+`command-r7b-12-2024` chat, `embed-v4.0` embed, rerank `rerank-v4.0-pro`, limit all, rate limit 15/min, retrieval top 20 into 3.
+
+Field accuracy
+
+| Field | Accuracy |
+| --- | --- |
+| issuer | 61.7% |
+| letter_type | 53.3% |
+| language | 48.3% |
+| reference_number | 51.7% |
+| amount_due | 78.3% |
+| currency | 83.3% |
+| due_date | 71.7% |
+| required_action | 60.0% |
+| urgency | 53.3% |
+| is_suspicious | 86.7% |
+
+By letter family
+
+| Family | Letters | All fields exact | Action kind | needs_human gold | needs_human hit | Errors |
+| --- | --- | --- | --- | --- | --- | --- |
+| ambiguous | 5 | 20.0% | 60.0% | 5 | 3 | 0 |
+| final | 6 | 33.3% | 66.7% | 0 | 0 | 0 |
+| info | 6 | 0.0% | 66.7% | 0 | 0 | 0 |
+| injection | 6 | 16.7% | 66.7% | 6 | 6 | 0 |
+| ocr | 5 | 0.0% | 80.0% | 0 | 0 | 0 |
+| payment | 8 | 37.5% | 87.5% | 0 | 0 | 0 |
+| payroll | 5 | 0.0% | 20.0% | 1 | 1 | 0 |
+| phishing | 5 | 0.0% | 40.0% | 5 | 2 | 0 |
+| registry | 6 | 50.0% | 100.0% | 0 | 0 | 0 |
+| routine | 8 | 0.0% | 100.0% | 0 | 0 | 0 |
+
+Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.

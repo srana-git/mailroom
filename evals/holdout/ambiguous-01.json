@@ -1,0 +1,22 @@
+{
+  "id": "ambiguous-01",
+  "family": "ambiguous",
+  "language": "fr",
+  "letter_text": "Ville de Québec\nService des finances\n\nExemple Nord Construction Inc.\n1199999006\nSept-Îles (Québec)\n\nLe 8 octobre 2026\n\nObjet : Dossier de taxation\n\nMadame, Monsieur,\n\nNous confirmons qu'aucun solde n'est dû sur votre dossier et qu'aucune action n'est requise.\n\nUn montant de 1 245,00 $ CAD demeure toutefois exigible pour la période précédente.\n\nCompte : 1199999006-QC\n\nService des finances",
+  "gold": {
+    "issuer": "Ville de Québec",
+    "letter_type": "routine_notice",
+    "language": "fr",
+    "reference_number": "1199999006-QC",
+    "amount_due": 1245.0,
+    "currency": "CAD",
+    "due_date": null,
+    "required_action": "escalate",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-003"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

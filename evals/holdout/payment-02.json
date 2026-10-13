@@ -1,0 +1,22 @@
+{
+  "id": "payment-02",
+  "family": "payment",
+  "language": "en",
+  "letter_text": "Hydro Exemple\nService à la clientèle\n\nBoulangerie Exemple Ltée\n1199999002\nQuébec (Québec)\n\nOctober 3, 2026\n\nSubject: Your electricity account - amount due\n\nDear customer,\n\nYour electricity account shows an amount due for the period ending September 30, 2026.\n\nAccount: 1199999002-HX\nAmount due: $1,864.40 CAD\nPayment due date: October 26, 2026\n\nA late payment charge applies to any balance not received by the due date.\n\nService à la clientèle",
+  "gold": {
+    "issuer": "Hydro Exemple",
+    "letter_type": "payment_demand",
+    "language": "en",
+    "reference_number": "1199999002-HX",
+    "amount_due": 1864.4,
+    "currency": "CAD",
+    "due_date": "2026-10-26",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-UTL-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

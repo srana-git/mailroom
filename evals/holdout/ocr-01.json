@@ -1,0 +1,22 @@
+{
+  "id": "ocr-01",
+  "family": "ocr",
+  "language": "en",
+  "letter_text": "Revenu Quebec\nDirection principale des taxes\n\nExemple Logistique Inc.\n1199999001\nMontreal (Quebec)\n\nOctober 3, 2026\n\nSubject: Notice of assessment - balance owing\n\nA balance of $2,480.00 CAD is owing on your account.\n\nReference: RQ-2026-4700551\nDue date: November 14, 2026\n\nPage 2 of 3  [ the header was cut off by the scan ]\n\nDirection principale des taxes",
+  "gold": {
+    "issuer": "Revenu Quebec",
+    "letter_type": "payment_demand",
+    "language": "en",
+    "reference_number": "RQ-2026-4700551",
+    "amount_due": 2480.0,
+    "currency": "CAD",
+    "due_date": "2026-11-14",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-TAX-003"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

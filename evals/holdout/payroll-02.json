@@ -1,0 +1,22 @@
+{
+  "id": "payroll-02",
+  "family": "payroll",
+  "language": "fr",
+  "letter_text": "Agence du revenu du Canada\nBureau des services de paie\n\nExemple Toiture SENC\n1199999003\nLaval (Québec)\n\nLe 2 octobre 2026\n\nObjet : Correction d'un relevé d'emploi\n\nMadame, Monsieur,\n\nLe relevé d'emploi produit pour la période se terminant le 15 août 2026 contient une erreur sur le nombre d'heures assurables.\n\nCompte : 1199999003-RP0001\nRéférence : ARC-2026-62155\n\nVeuillez transmettre le relevé modifié au plus tard le 30 octobre 2026, en précisant le numéro de l'amendement.\n\nBureau des services de paie",
+  "gold": {
+    "issuer": "Agence du revenu du Canada",
+    "letter_type": "payroll_remittance",
+    "language": "fr",
+    "reference_number": "ARC-2026-62155",
+    "amount_due": null,
+    "currency": null,
+    "due_date": "2026-10-30",
+    "required_action": "update_payroll",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-PAY-006"],
+  "gold_action_kind": "file",
+  "gold_needs_human": false
+}

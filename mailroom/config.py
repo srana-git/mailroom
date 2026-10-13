@@ -89,6 +89,12 @@ EVAL_CONFIGS: Final[dict[str, EvalConfig]] = {
     "C": EvalConfig("C", CHEAP_MODEL, EMBED_MODEL, RERANK_MODEL),
 }
 
+# The two letter sets an eval can score. `golden` is the development set that the
+# prompts and the gold labels were written against. `holdout` was written and
+# committed before the v2 changes and is never used for tuning.
+EVAL_SETS: Final[tuple[str, ...]] = ("golden", "holdout")
+DEFAULT_EVAL_SET: Final = "golden"
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -102,6 +108,7 @@ class Settings:
     playbook_dir: Path
     registry_path: Path
     golden_dir: Path
+    holdout_dir: Path
     results_dir: Path
     chat_model: str = CHAT_MODEL
     cheap_model: str = CHEAP_MODEL
@@ -135,6 +142,7 @@ class Settings:
             "playbook_dir": base / "data" / "playbook",
             "registry_path": base / "data" / "registry.json",
             "golden_dir": base / "evals" / "golden",
+            "holdout_dir": base / "evals" / "holdout",
             "results_dir": base / "evals" / "results",
             "backend": resolved_backend,
         }
@@ -168,9 +176,11 @@ __all__ = [
     "API_KEY_ENV",
     "CHEAP_MODEL",
     "CHAT_MODEL",
+    "DEFAULT_EVAL_SET",
     "EMBED_DIMENSION",
     "EMBED_MODEL",
     "EVAL_CONFIGS",
+    "EVAL_SETS",
     "PASS_ENTRY",
     "RERANK_MODEL",
     "REPO_ROOT",
