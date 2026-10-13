@@ -202,6 +202,33 @@ def test_eval_rejects_an_unknown_letter_set(tmp_path: Path):
     assert "Unknown letter set" in combined(result)
 
 
+def test_rescore_writes_a_rescored_file_beside_the_source(tmp_path: Path):
+    golden = json.loads(
+        (REPO_ROOT / "evals" / "golden" / "routine-07.json").read_text(encoding="utf-8")
+    )
+    record = {
+        "id": "routine-07",
+        "predicted_fields": golden["gold"],
+        "retrieved": golden["gold_playbooks"],
+        "gold_playbooks": [],
+    }
+    source = tmp_path / "2026-10-13-A.json"
+    source.write_text(
+        json.dumps({"config": "A", "set": "golden", "per_letter": [record]}), encoding="utf-8"
+    )
+    result = run(tmp_path, "eval", "--rescore", str(source))
+    assert result.exit_code == 0
+    out = tmp_path / "2026-10-13-A-rescored.json"
+    assert out.exists()
+    assert json.loads(out.read_text(encoding="utf-8"))["metrics"]["goal"]["all_fields_exact"] == 1.0
+
+
+def test_rescore_of_a_missing_file_fails(tmp_path: Path):
+    result = run(tmp_path, "eval", "--rescore", str(tmp_path / "absent.json"))
+    assert result.exit_code == 2
+    assert "no such result file" in combined(result)
+
+
 def test_models_without_a_key_says_so_and_writes_the_doc(tmp_path: Path):
     root = tmp_path / "repo"
     root.mkdir()

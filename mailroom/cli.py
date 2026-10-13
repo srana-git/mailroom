@@ -24,6 +24,7 @@ from .audit import read_run, summarize_run
 from .config import DEFAULT_EVAL_SET, EVAL_CONFIGS, EVAL_SETS, Settings, load_api_key
 from .evaluation import report
 from .evaluation.harness import EvalHarness, load_results, write_results
+from .evaluation.rescore import RescoreError, rescore_result
 from .fake import FakeBackend
 from .indexer import PlaybookIndex
 from .llm import BackendError
@@ -371,9 +372,26 @@ def eval(  # noqa: A001 - the command is named eval on purpose
         "--render-only",
         help="Rewrite docs/EVALS.md from existing result files. No API calls.",
     ),
+    rescore: Path = typer.Option(
+        None,
+        "--rescore",
+        help=(
+            "Re-score an existing result file under the current gold and scoring "
+            "rules, and write <name>-rescored.json beside it. No API calls."
+        ),
+    ),
 ) -> None:
     """Run the golden set and write evals/results plus docs/EVALS.md."""
     settings = _context(ctx).settings
+    if rescore is not None:
+        try:
+            path = rescore_result(settings, rescore)
+        except RescoreError as exc:
+            typer.echo(str(exc), err=True)
+            raise typer.Exit(code=2) from exc
+        typer.echo(f"re-scored {rescore} -> {path}")
+        return
+
     if render_only:
         payloads = load_results(settings)
         path = report.write_evals_doc(settings.root, payloads)
