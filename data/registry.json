@@ -1,0 +1,127 @@
+{
+  "_note": "Invented data. Company numbers start 1199999... and every domain uses the reserved .example TLD, so nothing here can belong to a real organisation.",
+  "companies": [
+    {
+      "name": "Exemple Logistique Inc.",
+      "number": "1199999001",
+      "city": "Montréal",
+      "province": "QC",
+      "contacts": ["comptabilite@exemple-logistique.example"]
+    },
+    {
+      "name": "Boulangerie Exemple Ltée",
+      "number": "1199999002",
+      "city": "Québec",
+      "province": "QC",
+      "contacts": ["admin@boulangerie-exemple.example"]
+    },
+    {
+      "name": "Exemple Toiture SENC",
+      "number": "1199999003",
+      "city": "Laval",
+      "province": "QC",
+      "contacts": ["info@exemple-toiture.example"]
+    },
+    {
+      "name": "Exemple Média Inc.",
+      "number": "1199999004",
+      "city": "Montréal",
+      "province": "QC",
+      "contacts": ["factures@exemple-media.example"]
+    },
+    {
+      "name": "Exemple Conseil Inc.",
+      "number": "1199999005",
+      "city": "Gatineau",
+      "province": "QC",
+      "contacts": ["direction@exemple-conseil.example"]
+    },
+    {
+      "name": "Exemple Nord Construction Inc.",
+      "number": "1199999006",
+      "city": "Sept-Îles",
+      "province": "QC",
+      "contacts": ["paie@exemple-nord.example"]
+    }
+  ],
+  "known_payees": [
+    {
+      "name": "Revenu Québec",
+      "email": "paiements@revenuquebec.example",
+      "account": "1199999001-01",
+      "note": "Main tax account for Exemple Logistique Inc."
+    },
+    {
+      "name": "Revenu Québec",
+      "email": "paiements@revenuquebec.example",
+      "account": "1199999002-01",
+      "note": "Main tax account for Boulangerie Exemple Ltée."
+    },
+    {
+      "name": "Agence du revenu du Canada",
+      "email": "paiements@arc.example",
+      "account": "1199999001-RP0001",
+      "note": "Payroll withholding account, Exemple Logistique Inc."
+    },
+    {
+      "name": "Agence du revenu du Canada",
+      "email": "paiements@arc.example",
+      "account": "1199999006-RP0001",
+      "note": "Payroll withholding account, Exemple Nord Construction Inc."
+    },
+    {
+      "name": "Registraire des entreprises du Québec",
+      "email": "declarations@registraire.example",
+      "account": "1199999001-REG",
+      "note": "Annual declaration filings."
+    },
+    {
+      "name": "Ville de Montréal",
+      "email": "taxes@montreal.example",
+      "account": "1199999004-MTL",
+      "note": "Municipal tax account, Exemple Média Inc."
+    },
+    {
+      "name": "Ville de Laval",
+      "email": "taxes@laval.example",
+      "account": "1199999003-LAV",
+      "note": "Municipal tax account, Exemple Toiture SENC."
+    },
+    {
+      "name": "Hydro-Québec",
+      "email": "comptes@hydro.example",
+      "account": "1199999004-HQ",
+      "note": "Electricity account, Exemple Média Inc."
+    },
+    {
+      "name": "CNESST",
+      "email": "cotisations@cnesst.example",
+      "account": "1199999006-CNESST",
+      "note": "Workplace safety premiums, Exemple Nord Construction Inc."
+    },
+    {
+      "name": "Commission de la construction du Québec",
+      "email": "cotisations@ccq.example",
+      "account": "1199999006-CCQ",
+      "note": "Construction industry contributions."
+    },
+    {
+      "name": "Papeterie Exemple",
+      "email": "facturation@papeterie-exemple.example",
+      "account": "1199999811",
+      "note": "Office supplies supplier."
+    },
+    {
+      "name": "Exemple Télécom",
+      "email": "facturation@exemple-telecom.example",
+      "account": "1199999822",
+      "note": "Telephone and internet supplier."
+    },
+    {
+      "name": "Exemple Assurances",
+      "email": "avis@exemple-assurances.example",
+      "account": "1199999833",
+      "note": "Business insurance broker."
+    }
+  ]
+}
