@@ -1,0 +1,19 @@
+# Secrets
+.env
+*.key
+
+# Scratch spec files written for an agent lane
+.ds-spec-*
+
+# Runtime state: index, pending queue, audit runs
+.mailroom/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Eval result files are committed deliberately; see docs/EVALS.md
