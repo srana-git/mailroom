@@ -11,7 +11,7 @@ from mailroom.config import Settings
 from mailroom.fake import FakeBackend, hash_embedding
 from mailroom.indexer import META_NAME, TABLE_NAME, IndexError_, PlaybookIndex
 from mailroom.models import RetrievalHit
-from mailroom.retrieval import Retriever, dedupe_by_playbook
+from mailroom.retrieval import Retriever, dedupe_by_playbook, forced_hits
 
 
 def test_hash_embedding_is_deterministic_and_normalised():
@@ -157,3 +157,28 @@ def test_a_missing_index_metadata_block_is_reported(settings: Settings, backend:
     settings.index_dir.mkdir(parents=True, exist_ok=True)
     with pytest.raises(IndexError_, match="no index metadata"):
         PlaybookIndex(settings, backend).table()
+
+
+# -- procedures forced by a deterministic scan -----------------------------
+
+
+def test_forced_hits_name_the_requested_procedures_in_order(settings: Settings):
+    hits = dedupe_by_playbook(forced_hits(settings.playbook_dir, ["PB-SEC-001", "PB-SEC-002"]))
+    assert [hit.playbook_id for hit in hits] == ["PB-SEC-001", "PB-SEC-002"]
+    assert all(hit.stage == "forced" for hit in hits)
+    assert all(hit.score == 1.0 for hit in hits)
+
+
+def test_forced_hits_carry_the_procedure_text(settings: Settings):
+    hits = forced_hits(settings.playbook_dir, ["PB-SEC-002"])
+    assert hits
+    assert hits[0].title == "Instructions embedded in a letter"
+    assert "PB-SEC-002" in hits[0].text
+
+
+def test_forced_hits_are_empty_for_no_ids(settings: Settings):
+    assert forced_hits(settings.playbook_dir, []) == []
+
+
+def test_forced_hits_ignore_an_unknown_id(settings: Settings):
+    assert forced_hits(settings.playbook_dir, ["PB-NOPE-9"]) == []

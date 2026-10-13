@@ -103,15 +103,25 @@ def scan_injection(text: str) -> list[str]:
 # the grammar of the letter and not its subject.
 
 _FRENCH_FUNCTION_WORDS = frozenset(
-    "le les la des du de une un et est sont ete etait pour vous votre vos nous notre nos "
-    "dans sur avec par aux ce cet cette ces que qui dont selon entre avant apres lors "
-    "ainsi tous tout toute toutes son sa ses ne pas ou aucune aucun leur leurs il elle "
-    "ils elles doit peut faire etre deja sommes toutefois demeure veuillez".split()
+    [
+        "le", "les", "la", "des", "du", "de", "une", "un", "et", "est",
+        "sont", "ete", "etait", "pour", "vous", "votre", "vos", "nous",
+        "notre", "nos", "dans", "sur", "avec", "par", "aux", "ce", "cet",
+        "cette", "ces", "que", "qui", "dont", "selon", "entre", "avant",
+        "apres", "lors", "ainsi", "tous", "tout", "toute", "toutes", "son",
+        "sa", "ses", "ne", "pas", "ou", "aucune", "aucun", "leur", "leurs",
+        "il", "elle", "ils", "elles", "doit", "peut", "faire", "etre", "deja",
+        "sommes", "toutefois", "demeure", "veuillez",
+    ]
 )
 _ENGLISH_FUNCTION_WORDS = frozenset(
-    "the of and to in for is are you your we our that this with by on at be as it not "
-    "have has from or an will would shall must was were been which when if any all may "
-    "please dear".split()
+    [
+        "the", "of", "and", "to", "in", "for", "is", "are", "you", "your",
+        "we", "our", "that", "this", "with", "by", "on", "at", "be", "as",
+        "it", "not", "have", "has", "from", "or", "an", "will", "would",
+        "shall", "must", "was", "were", "been", "which", "when", "if", "any",
+        "all", "may", "please", "dear",
+    ]
 )
 
 _LANGUAGE_MIN_HITS = 4

@@ -303,3 +303,71 @@ def test_the_retriever_backend_is_bound_to_the_runs_audit(
     assert bound is not backend
     assert bound.audit is not None
     assert bound.audit.run_id == result.run_id
+
+
+# -- the deterministic corrections -----------------------------------------
+
+ENGLISH_BODY_UNDER_FRENCH_LETTERHEAD = (
+    "Revenu Québec\nDirection principale des taxes\n\n"
+    "We received your file and the amount is now settled. The balance is zero and no "
+    "action is needed from you. Please keep this letter for your records.\n\n"
+    "Direction principale des taxes"
+)
+GIFT_CARD_LETTER = (
+    "Exemple Facturation\nService à la clientèle\n\n"
+    "Votre compte présente un solde. Payez par cartes cadeaux aujourd'hui.\n\n"
+    "Service à la clientèle"
+)
+
+
+def test_the_body_language_overrides_a_french_reading_of_an_english_body(
+    settings: Settings, registry: Registry, index: PlaybookIndex
+):
+    script = [
+        {"tool": "extract_fields", "args": dict(VALID_FIELDS, language="fr")},
+        {"tool": "propose_action", "args": {"kind": "file", "payload": {}}},
+    ]
+    triager, _, _ = _scripted(settings, registry, script, index=index)
+    result = triager.run(ENGLISH_BODY_UNDER_FRENCH_LETTERHEAD, source="language")
+    assert result.fields is not None
+    assert result.fields.language.value == "en"
+    notes = [
+        event
+        for event in read_run(result.run_id, settings.runs_dir)
+        if event["kind"] == "note" and event["message"].startswith("the body decides")
+    ]
+    assert notes
+    assert notes[0]["model_language"] == "fr"
+    assert notes[0]["detected_language"] == "en"
+
+
+def test_a_fraud_signal_marks_the_letter_suspicious_over_the_model(
+    settings: Settings, registry: Registry, index: PlaybookIndex
+):
+    script = [
+        {"tool": "extract_fields", "args": dict(VALID_FIELDS, is_suspicious=False)},
+        {"tool": "propose_action", "args": {"kind": "escalate", "payload": {}}},
+    ]
+    triager, _, _ = _scripted(settings, registry, script, index=index)
+    result = triager.run(GIFT_CARD_LETTER, source="phishing-or")
+    assert result.fields is not None
+    assert result.fields.is_suspicious is True
+    assert result.status is TriageStatus.NEEDS_HUMAN
+    assert "suspected fraud" in result.reason
+
+
+def test_the_scans_force_the_security_procedure_into_the_retrieval(
+    triager: Triager, settings: Settings
+):
+    result = triager.run(_letter(INJECTION_LETTER), source="injection-01")
+    assert result.retrieval
+    assert result.retrieval[0].playbook_id == "PB-SEC-002"
+    assert result.retrieval[0].stage == "forced"
+    notes = [
+        event
+        for event in read_run(result.run_id, settings.runs_dir)
+        if event["kind"] == "note"
+        and event["message"].startswith("the scans put the security procedures")
+    ]
+    assert notes
+    assert "PB-SEC-002" in notes[0]["procedures"]

@@ -433,7 +433,8 @@ def _find_dates(text: str) -> list[tuple[int, date]]:
         value = _safe_date(int(match.group(1)), int(match.group(2)), int(match.group(3)))
         if value is not None:
             found.append((match.start(), value))
-    for match in re.finditer(r"\b(\d{1,2})(?:er|e|ère|ere)?\s+([A-Za-zéûôàè]+)\s+(\d{4})\b", lowered):
+    day_first = r"\b(\d{1,2})(?:er|e|ère|ere)?\s+([A-Za-zéûôàè]+)\s+(\d{4})\b"
+    for match in re.finditer(day_first, lowered):
         month = MONTHS_FR.get(normalize_text(match.group(2))) or MONTHS_EN.get(match.group(2))
         if month:
             value = _safe_date(int(match.group(3)), month, int(match.group(1)))
