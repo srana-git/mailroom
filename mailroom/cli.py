@@ -262,6 +262,8 @@ def trace(
         "tool_calls",
         "tokens_in",
         "tokens_out",
+        "model_latency_ms",
+        "retrieval_latency_ms",
         "latency_ms",
     ):
         typer.echo(f"  {key:15s} {summary.get(key)}")
@@ -275,7 +277,8 @@ def _format_event(event: dict[str, Any]) -> str:
     kind = event.get("kind")
     if kind == "model_call":
         return (
-            f"  {stamp} model_call  {event.get('model')} attempt={event.get('attempt')} "
+            f"  {stamp} model_call  {event.get('operation', 'chat')} {event.get('model')} "
+            f"attempt={event.get('attempt')} "
             f"{event.get('status')} {event.get('latency_ms')}ms "
             f"in={event.get('tokens_in')} out={event.get('tokens_out')}"
             + (f" error={event.get('error')}" if event.get("error") else "")

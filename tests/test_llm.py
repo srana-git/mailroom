@@ -238,6 +238,66 @@ def test_rate_limiter_can_be_disabled():
     assert clock.now == 0.0
 
 
+# -- retrieval calls are audited too ---------------------------------------
+
+
+def _limited(settings: Settings, per_minute: int) -> Settings:
+    return Settings.build(
+        root=settings.root,
+        backend=settings.backend,
+        state_dir=settings.state_dir,
+        index_dir=settings.index_dir,
+        queue_path=settings.queue_path,
+        runs_dir=settings.runs_dir,
+        requests_per_minute=per_minute,
+    )
+
+
+def test_an_embed_call_is_logged_as_an_embed_event(settings: Settings):
+    directory = settings.runs_dir
+    log = AuditLog("run-embed", directory)
+    response = SimpleNamespace(embeddings=SimpleNamespace(float_=[[0.1, 0.2]]))
+    backend = CohereBackend(
+        StubClient([response]), _limited(settings, 0), audit=log, sleep=lambda _s: None
+    )
+    backend.embed(model="embed-v4.0", texts=["a query"], input_type="search_query")
+    events = read_run("run-embed", directory)
+    assert events[0]["kind"] == "model_call"
+    assert events[0]["operation"] == "embed"
+    assert events[0]["model"] == "embed-v4.0"
+
+
+def test_a_rerank_call_is_logged_as_a_rerank_event(settings: Settings):
+    directory = settings.runs_dir
+    log = AuditLog("run-rerank", directory)
+    response = SimpleNamespace(results=[SimpleNamespace(index=0, relevance_score=0.5)])
+    backend = CohereBackend(
+        StubClient([response]), _limited(settings, 0), audit=log, sleep=lambda _s: None
+    )
+    backend.rerank(model="rerank-v4.0-pro", query="q", documents=["a"], top_n=1)
+    assert read_run("run-rerank", directory)[0]["operation"] == "rerank"
+
+
+def test_the_rate_limiter_wait_is_not_inside_the_logged_latency(settings: Settings):
+    """Model time excludes the limiter wait, which is why it is reported apart."""
+    clock = FakeClock()
+    directory = settings.runs_dir
+    log = AuditLog("run-limit", directory)
+    backend = CohereBackend(
+        StubClient([chat_response("one"), chat_response("two")]),
+        _limited(settings, 1),
+        audit=log,
+        limiter=RateLimiter(1, clock=clock, sleep=clock.sleep),
+        sleep=clock.sleep,
+        clock=clock,
+    )
+    backend.chat(model="m", messages=[{"role": "user", "content": "a"}])
+    backend.chat(model="m", messages=[{"role": "user", "content": "b"}])
+    events = read_run("run-limit", directory)
+    assert [event["latency_ms"] for event in events] == [0, 0]
+    assert clock.now == pytest.approx(60.0)
+
+
 def test_a_missing_index_directory_raises_a_helpful_error(tmp_path: Path):
     from mailroom.indexer import IndexError_, PlaybookIndex
 

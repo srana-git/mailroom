@@ -284,6 +284,24 @@ def test_latency_scores_report_p50_p95_and_mean():
     assert scores["mean_ms"] == 200.0
 
 
+def test_latency_scores_report_model_time_beside_wall_time():
+    records = [
+        _record(latency_ms=1000, model_latency_ms=400),
+        _record(latency_ms=2000, model_latency_ms=800),
+        _record(latency_ms=3000, model_latency_ms=1200),
+    ]
+    scores = metrics.latency_scores(records)
+    assert scores["p50_ms"] == 2000.0
+    assert scores["model_p50_ms"] == 800.0
+    assert scores["model_p95_ms"] == 1200.0
+    assert scores["model_mean_ms"] == 800.0
+
+
+def test_a_record_without_model_time_reads_as_zero_not_as_a_crash():
+    scores = metrics.latency_scores([_record(latency_ms=500)])
+    assert scores["model_p50_ms"] == 0.0
+
+
 def test_cost_is_none_when_no_price_is_configured():
     usage = metrics.usage_scores([_record(cost_usd=None)])
     assert usage["cost_usd_per_letter"] is None

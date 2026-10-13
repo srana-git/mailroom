@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from ..agent import Triager
+from ..audit import model_time_ms, read_run
 from ..config import (
     DEFAULT_EVAL_SET,
     EVAL_CONFIGS,
@@ -108,6 +109,21 @@ class EvalHarness:
         """The directory the letters are read from, chosen by `--set`."""
         return self.settings.golden_dir if self.case_set == "golden" else self.settings.holdout_dir
 
+    @property
+    def traces_dir(self) -> Path:
+        """Where the per-letter audit trails of this run are written.
+
+        Under `.mailroom/eval-runs/<date>-<config>-<set>/`. The eval used to point
+        the trails at a TemporaryDirectory, so every trace was deleted when the
+        run ended and no per-letter model time could ever be recomputed. The
+        trails are now kept, one `<letter>.jsonl` per letter.
+        """
+        return (
+            self.settings.state_dir
+            / "eval-runs"
+            / f"{date.today().isoformat()}-{self.config.name}-{self.case_set}"
+        )
+
     def run(self, *, limit: int | None = None) -> dict[str, Any]:
         settings = self.settings
         cases = load_golden(self.cases_dir, limit=limit)
@@ -116,7 +132,11 @@ class EvalHarness:
 
         index_meta = self._ensure_index()
         registry = load_registry(settings.registry_path)
+        traces_dir = self.traces_dir
+        traces_dir.mkdir(parents=True, exist_ok=True)
 
+        # The queue stays in a scratch directory: the eval must never write to the
+        # real pending queue. Only the audit trails are kept.
         with tempfile.TemporaryDirectory(prefix="mailroom-eval-") as scratch:
             scratch_settings = Settings.build(
                 root=settings.root,
@@ -124,7 +144,7 @@ class EvalHarness:
                 state_dir=Path(scratch),
                 index_dir=settings.index_dir,
                 queue_path=Path(scratch) / "queue.jsonl",
-                runs_dir=Path(scratch) / "runs",
+                runs_dir=traces_dir,
                 chat_model=self.config.chat_model,
                 embed_model=self.config.embed_model,
                 rerank_model=self.config.rerank_model,
@@ -151,7 +171,7 @@ class EvalHarness:
                 model=self.config.chat_model,
             )
             per_letter = [
-                self._run_case(triager, case, index=number)
+                self._run_case(triager, case, index=number, traces_dir=traces_dir)
                 for number, case in enumerate(cases, start=1)
             ]
 
@@ -186,28 +206,36 @@ class EvalHarness:
             meta = index.build(force=True, verbose=False)
         return meta
 
-    def _run_case(self, triager: Triager, case: GoldenCase, *, index: int) -> dict[str, Any]:
+    def _run_case(
+        self, triager: Triager, case: GoldenCase, *, index: int, traces_dir: Path
+    ) -> dict[str, Any]:
         self.progress(f"[{index}] {case.id} ({case.family}, {case.language})")
+        # The letter id is the run id, so its audit trail is <letter>.jsonl. Clear
+        # any trail left by an earlier run of the same set; the log appends.
+        (traces_dir / f"{case.id}.jsonl").unlink(missing_ok=True)
         started = time.perf_counter()
         try:
-            result = triager.run(case.letter_text, source=case.id)
+            result = triager.run(case.letter_text, source=case.id, run_id=case.id)
         except Exception as exc:  # noqa: BLE001 - one bad letter must not end the run
             elapsed = int((time.perf_counter() - started) * 1000)
             result = TriageResult(
-                run_id="unstarted",
+                run_id=case.id,
                 source=case.id,
                 status=TriageStatus.ERROR,
                 reason=f"{type(exc).__name__}: {exc}",
                 latency_ms=elapsed,
             )
-        return self._record(case, result)
+        return self._record(case, result, traces_dir=traces_dir)
 
-    def _record(self, case: GoldenCase, result: TriageResult) -> dict[str, Any]:
+    def _record(
+        self, case: GoldenCase, result: TriageResult, *, traces_dir: Path
+    ) -> dict[str, Any]:
         predicted_fields = result.fields.model_dump(mode="json") if result.fields else None
         retrieved = [hit.playbook_id for hit in dedupe_by_playbook(result.retrieval)]
         cost = estimate_cost_usd(
             self.config.chat_model, result.input_tokens, result.output_tokens
         )
+        timing = model_time_ms(read_run(case.id, traces_dir))
         return {
             "id": case.id,
             "family": case.family,
@@ -240,6 +268,8 @@ class EvalHarness:
             "injection_flags": result.injection_flags,
             "steps": result.steps,
             "latency_ms": result.latency_ms,
+            "model_latency_ms": timing["model_latency_ms"],
+            "retrieval_latency_ms": timing["retrieval_latency_ms"],
             "input_tokens": result.input_tokens,
             "output_tokens": result.output_tokens,
             "cost_usd": cost,

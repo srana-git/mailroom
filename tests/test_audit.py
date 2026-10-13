@@ -5,7 +5,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from mailroom.audit import AuditLog, input_hash, new_run_id, read_run, summarize_run
+from mailroom.audit import (
+    AuditLog,
+    input_hash,
+    model_time_ms,
+    new_run_id,
+    read_run,
+    summarize_run,
+)
 
 
 def test_run_ids_are_unique_and_file_safe():
@@ -112,3 +119,54 @@ def test_summarising_nothing_is_safe():
     assert summary["run_id"] is None
     assert summary["status"] is None
     assert summary["events"] == 0
+
+
+# -- model time ------------------------------------------------------------
+
+
+def test_a_model_call_records_its_operation(tmp_path: Path):
+    log = AuditLog("run1", tmp_path / "runs")
+    log.model_call(model="embed-v4.0", attempt=1, latency_ms=5, status="ok", operation="embed")
+    assert read_run("run1", tmp_path / "runs")[0]["operation"] == "embed"
+
+
+def test_a_model_call_defaults_to_the_chat_operation(tmp_path: Path):
+    log = AuditLog("run1", tmp_path / "runs")
+    log.model_call(model="m", attempt=1, latency_ms=5, status="ok")
+    assert read_run("run1", tmp_path / "runs")[0]["operation"] == "chat"
+
+
+def test_model_time_separates_chat_from_retrieval():
+    events = [
+        {"kind": "model_call", "operation": "chat", "latency_ms": 1000},
+        {"kind": "model_call", "operation": "embed", "latency_ms": 300},
+        {"kind": "model_call", "operation": "rerank", "latency_ms": 200},
+        {"kind": "tool_call", "latency_ms": 75},
+    ]
+    assert model_time_ms(events) == {"model_latency_ms": 1500, "retrieval_latency_ms": 500}
+
+
+def test_a_models_listing_is_not_letter_work():
+    events = [{"kind": "model_call", "operation": "models", "latency_ms": 900}]
+    assert model_time_ms(events) == {"model_latency_ms": 0, "retrieval_latency_ms": 0}
+
+
+def test_model_time_counts_a_failed_attempt():
+    events = [
+        {"kind": "model_call", "operation": "chat", "latency_ms": 400, "status": "error"},
+        {"kind": "model_call", "operation": "chat", "latency_ms": 600, "status": "ok"},
+    ]
+    assert model_time_ms(events)["model_latency_ms"] == 1000
+
+
+def test_model_time_of_a_run_with_no_model_calls_is_zero():
+    assert model_time_ms([{"kind": "note"}]) == {"model_latency_ms": 0, "retrieval_latency_ms": 0}
+
+
+def test_the_summary_reports_model_and_retrieval_time(tmp_path: Path):
+    log = AuditLog("run1", tmp_path / "runs")
+    log.model_call(model="m", attempt=1, latency_ms=900, status="ok", tokens_in=10)
+    log.model_call(model="e", attempt=1, latency_ms=120, status="ok", operation="embed")
+    summary = summarize_run(read_run("run1", tmp_path / "runs"))
+    assert summary["model_latency_ms"] == 1020
+    assert summary["retrieval_latency_ms"] == 120

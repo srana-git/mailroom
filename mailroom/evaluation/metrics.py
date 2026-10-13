@@ -311,11 +311,22 @@ def percentile(values: list[float], fraction: float) -> float:
 
 
 def latency_scores(per_letter: list[dict[str, Any]]) -> dict[str, float]:
+    """Wall-clock latency, and the model time inside it, per letter.
+
+    Model time is the sum of the `model_call` latencies recorded in the run's
+    audit trail, retrieval included. The client-side rate limiter waits before
+    the timed call, so limiter waiting is in the wall clock but not in the model
+    time: the gap between the two is where the limiter shows up.
+    """
     latencies = [float(record.get("latency_ms") or 0) for record in per_letter]
+    model_times = [float(record.get("model_latency_ms") or 0) for record in per_letter]
     return {
         "p50_ms": percentile(latencies, 0.50),
         "p95_ms": percentile(latencies, 0.95),
         "mean_ms": (sum(latencies) / len(latencies)) if latencies else 0.0,
+        "model_p50_ms": percentile(model_times, 0.50),
+        "model_p95_ms": percentile(model_times, 0.95),
+        "model_mean_ms": (sum(model_times) / len(model_times)) if model_times else 0.0,
     }
 
 

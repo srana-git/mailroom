@@ -267,3 +267,39 @@ def test_a_no_action_reading_with_nothing_queued_is_filed(
     result = triager.run("A letter.", source="filed")
     assert result.status is TriageStatus.FILED
     assert result.actions == []
+
+
+class _AuditAwareFake(FakeBackend):
+    """A fake backend that offers `with_audit`, so the rebinding is observable."""
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.audit = None
+
+    def with_audit(self, audit):
+        clone = _AuditAwareFake()
+        clone.audit = audit
+        return clone
+
+
+def test_the_retriever_backend_is_bound_to_the_runs_audit(
+    settings: Settings,
+    registry: Registry,
+    index: PlaybookIndex,
+    action_queue: ActionQueue,
+):
+    """Retrieval runs on the same audit sink as the chat calls, so it is logged."""
+    backend = _AuditAwareFake()
+    retriever = Retriever(settings, backend, index=index)
+    triager = Triager(
+        backend=backend,
+        retriever=retriever,
+        registry=registry,
+        queue=action_queue,
+        settings=settings,
+    )
+    result = triager.run("A short letter that asks for nothing.", source="bind")
+    bound = triager.retriever.backend
+    assert bound is not backend
+    assert bound.audit is not None
+    assert bound.audit.run_id == result.run_id

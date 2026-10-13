@@ -52,8 +52,18 @@ Safety
 
 Cost
 - latency p50 and p95: wall-clock milliseconds per letter, for the whole run.
+- model p50 and p95: the same percentiles over model time alone. Model time is the
+  sum of the `model_call` latencies in the letter's audit trail, chat, embed and
+  rerank together. Each call is timed around the request itself, so the wait spent
+  inside the client-side rate limiter is excluded from model time and is present
+  only in the wall clock. The gap between the two percentiles is mostly the
+  limiter.
 - tokens and cost: chat tokens in and out per letter. Cost needs a filled price
   table; see the note below.
+- audit trails: every letter's trail is kept at
+  `.mailroom/eval-runs/<date>-<config>-<set>/<letter>.jsonl`, so model time can be
+  recomputed from the run after the fact instead of being read off a deleted
+  temporary directory.
 
 ## The three configs
 
@@ -157,7 +167,9 @@ RESULT_COLUMNS = (
     "Injection resist",
     "Phishing recall",
     "p50 ms",
+    "Model p50 ms",
     "p95 ms",
+    "Model p95 ms",
     "Tokens/letter",
     "Cost/letter",
     "Set",
@@ -182,9 +194,17 @@ def results_table(payloads: list[dict[str, Any]]) -> str:
         latency = m["latency"]
         usage = m["usage"]
         tokens_per_letter = (usage["tokens_in_per_letter"] + usage["tokens_out_per_letter"])
+        # Runs made before model time was recorded carry no key, so they report
+        # `n/a` rather than a false 0.
+        model_time_recorded = any(
+            "model_latency_ms" in record for record in payload.get("per_letter") or []
+        )
+        model_p50 = f"{latency['model_p50_ms']:.0f}" if model_time_recorded else "n/a"
+        model_p95 = f"{latency['model_p95_ms']:.0f}" if model_time_recorded else "n/a"
         rows.append(
             "| {config} | {chat} | {rerank} | {letters} | {exact} | {letter_type} | {urgency} "
-            "| {recall} | {mrr} | {prec} | {rec} | {writes} | {resist} | {phish} | {p50} | {p95} "
+            "| {recall} | {mrr} | {prec} | {rec} | {writes} | {resist} | {phish} | {p50} "
+            "| {model_p50} | {p95} | {model_p95} "
             "| {tokens} | {cost} | {case_set} |".format(
                 config=payload["config"],
                 chat=payload["models"]["chat"],
@@ -201,7 +221,9 @@ def results_table(payloads: list[dict[str, Any]]) -> str:
                 resist=_percent(safety["injection_resist_rate"]),
                 phish=_percent(safety["phishing_flag_recall"]),
                 p50=f"{latency['p50_ms']:.0f}",
+                model_p50=model_p50,
                 p95=f"{latency['p95_ms']:.0f}",
+                model_p95=model_p95,
                 tokens=f"{tokens_per_letter:.0f}",
                 cost=(
                     f"${usage['cost_usd_per_letter']:.5f}"
@@ -301,6 +323,15 @@ def render_evals_doc(payloads: list[dict[str, Any]]) -> str:
         parts.append(family_table(payload))
         parts.append("")
         usage = payload["metrics"]["usage"]
+        model_time_recorded = any(
+            "model_latency_ms" in record for record in payload.get("per_letter") or []
+        )
+        if not model_time_recorded:
+            parts.append(
+                "Model p50 and p95 are `n/a`: this run predates per-letter model-time "
+                "accounting, and its audit trails are gone, so model time cannot be "
+                "recovered from it. Re-run to populate them."
+            )
         if usage["cost_usd_per_letter"] is None:
             parts.append(
                 "Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is "

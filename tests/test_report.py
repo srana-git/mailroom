@@ -33,6 +33,8 @@ def _payload(config: str = "A", letters: int = 2) -> dict:
             "gold_injection_target": {},
             "actions": [{"kind": "pay", "status": "pending", "blocked": False, "payload": {}}],
             "latency_ms": 500 + index,
+            "model_latency_ms": 120 + index,
+            "retrieval_latency_ms": 30,
             "input_tokens": 100,
             "output_tokens": 20,
             "cost_usd": None,
@@ -169,6 +171,33 @@ def test_the_results_table_names_the_letter_set():
     table = report.results_table([_payload()])
     assert "| Set |" in table
     assert "| golden |" in table
+
+
+def test_the_results_table_reports_model_time_beside_wall_time():
+    table = report.results_table([_payload()])
+    assert "| Model p50 ms |" in table
+    assert "| Model p95 ms |" in table
+    assert "| 120 |" in table
+
+
+def test_model_time_reads_as_not_available_when_the_run_predates_it():
+    payload = _payload()
+    for record in payload["per_letter"]:
+        del record["model_latency_ms"]
+    assert "| n/a |" in report.results_table([payload])
+
+
+def test_the_harness_keeps_its_traces_under_eval_runs(tmp_path: Path):
+    from datetime import date
+
+    live = Settings.build(root=tmp_path, backend="cohere", state_dir=tmp_path / "state")
+    harness = EvalHarness(
+        settings=live, backend=_LiveBackend(), config=EVAL_CONFIGS["A"], case_set="holdout"
+    )
+    expected = (
+        tmp_path / "state" / "eval-runs" / f"{date.today().isoformat()}-A-holdout"
+    )
+    assert harness.traces_dir == expected
 
 
 def test_every_result_column_has_a_header():

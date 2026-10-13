@@ -37,8 +37,18 @@ Safety
 
 Cost
 - latency p50 and p95: wall-clock milliseconds per letter, for the whole run.
+- model p50 and p95: the same percentiles over model time alone. Model time is the
+  sum of the `model_call` latencies in the letter's audit trail, chat, embed and
+  rerank together. Each call is timed around the request itself, so the wait spent
+  inside the client-side rate limiter is excluded from model time and is present
+  only in the wall clock. The gap between the two percentiles is mostly the
+  limiter.
 - tokens and cost: chat tokens in and out per letter. Cost needs a filled price
   table; see the note below.
+- audit trails: every letter's trail is kept at
+  `.mailroom/eval-runs/<date>-<config>-<set>/<letter>.jsonl`, so model time can be
+  recomputed from the run after the fact instead of being read off a deleted
+  temporary directory.
 
 ## The three configs
 
@@ -85,11 +95,11 @@ comparable.
 
 ## Results
 
-| Config | Chat model | Rerank | Letters | All fields exact | Letter type | Urgency +/-1 | Recall@3 | MRR | needs_human P | needs_human R | Unapproved writes | Injection resist | Phishing recall | p50 ms | p95 ms | Tokens/letter | Cost/letter | Set |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| A | command-a-plus-05-2026 | rerank-v4.0-pro | 60 | 23.3% | 65.0% | 95.0% | 0.617 | 0.628 | 0.812 | 0.765 | 0 | 100.0% | 60.0% | 17755 | 50595 | 9733 | n/a | golden |
-| B | command-a-plus-05-2026 | none | 60 | 23.3% | 66.7% | 95.0% | 0.608 | 0.600 | 0.857 | 0.706 | 0 | 100.0% | 60.0% | 16855 | 39332 | 9966 | n/a | golden |
-| C | command-r7b-12-2024 | rerank-v4.0-pro | 60 | 16.7% | 53.3% | 53.3% | 0.550 | 0.558 | 0.571 | 0.706 | 0 | 100.0% | 20.0% | 21311 | 36839 | 9120 | n/a | golden |
+| Config | Chat model | Rerank | Letters | All fields exact | Letter type | Urgency +/-1 | Recall@3 | MRR | needs_human P | needs_human R | Unapproved writes | Injection resist | Phishing recall | p50 ms | Model p50 ms | p95 ms | Model p95 ms | Tokens/letter | Cost/letter | Set |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A | command-a-plus-05-2026 | rerank-v4.0-pro | 60 | 23.3% | 65.0% | 95.0% | 0.617 | 0.628 | 0.812 | 0.765 | 0 | 100.0% | 60.0% | 17755 | n/a | 50595 | n/a | 9733 | n/a | golden |
+| B | command-a-plus-05-2026 | none | 60 | 23.3% | 66.7% | 95.0% | 0.608 | 0.600 | 0.857 | 0.706 | 0 | 100.0% | 60.0% | 16855 | n/a | 39332 | n/a | 9966 | n/a | golden |
+| C | command-r7b-12-2024 | rerank-v4.0-pro | 60 | 16.7% | 53.3% | 53.3% | 0.550 | 0.558 | 0.571 | 0.706 | 0 | 100.0% | 20.0% | 21311 | n/a | 36839 | n/a | 9120 | n/a | golden |
 
 ### Config A - set golden - 2026-10-13 (60 letters)
 
@@ -125,6 +135,7 @@ By letter family
 | registry | 6 | 83.3% | 100.0% | 0 | 0 | 0 |
 | routine | 8 | 12.5% | 100.0% | 0 | 0 | 0 |
 
+Model p50 and p95 are `n/a`: this run predates per-letter model-time accounting, and its audit trails are gone, so model time cannot be recovered from it. Re-run to populate them.
 Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.
 
 ### Config B - set golden - 2026-10-13 (60 letters)
@@ -161,6 +172,7 @@ By letter family
 | registry | 6 | 83.3% | 100.0% | 0 | 0 | 0 |
 | routine | 8 | 12.5% | 100.0% | 0 | 0 | 0 |
 
+Model p50 and p95 are `n/a`: this run predates per-letter model-time accounting, and its audit trails are gone, so model time cannot be recovered from it. Re-run to populate them.
 Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.
 
 ### Config C - set golden - 2026-10-13 (60 letters)
@@ -197,4 +209,5 @@ By letter family
 | registry | 6 | 50.0% | 100.0% | 0 | 0 | 0 |
 | routine | 8 | 0.0% | 100.0% | 0 | 0 | 0 |
 
+Model p50 and p95 are `n/a`: this run predates per-letter model-time accounting, and its audit trails are gone, so model time cannot be recovered from it. Re-run to populate them.
 Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.

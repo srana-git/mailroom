@@ -204,6 +204,7 @@ class CohereBackend:
                         status="error",
                         input_hash_value=hash_of,
                         error=f"{type(exc).__name__}: {status if status else exc}",
+                        operation=kind,
                     )
                 last_error = exc
                 if not retryable or attempt >= attempts:
@@ -224,6 +225,7 @@ class CohereBackend:
                         tokens_in=tokens_in,
                         tokens_out=tokens_out,
                         input_hash_value=hash_of,
+                        operation=kind,
                     )
                 return response
         raise BackendError(f"{kind} failed on {model}: {last_error}", attempts=attempts)

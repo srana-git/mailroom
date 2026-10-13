@@ -128,6 +128,11 @@ class Triager:
         run_id = run_id or new_run_id()
         audit = AuditLog(run_id, settings.runs_dir)
         backend = _bind_audit(self.backend, audit)
+        # The retriever holds its own copy of the backend. Bind it to the same
+        # audit sink, so an embed or a rerank is a logged event like any chat
+        # call. Retrieval is part of the model time and part of the request
+        # budget, and an invisible call is one nobody can account for.
+        self.retriever.backend = _bind_audit(self.retriever.backend, audit)
         started = time.perf_counter()
 
         audit.run_start(
