@@ -96,6 +96,7 @@ EXTRACT_FIELDS_SCHEMA: dict[str, Any] = {
                     "enum": [item.value for item in RequiredAction],
                     "description": (
                         "What the letter asks for: no_action (asks for nothing), pay, "
+                        "contest (the letter states a dispute or names a ground to object), "
                         "file_declaration, provide_documents, confirm_address, "
                         "update_payroll (payroll remittances, a Record of Employment, a "
                         "withholding account), report_phishing, or escalate when none of "
