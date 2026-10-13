@@ -26,6 +26,12 @@ SCORED_FIELDS = (
 )
 
 EXACT_FIELDS = SCORED_FIELDS
+
+# The fields an operator acts on. Reported as its own exact-letter rate beside
+# the full one, because a letter can be operationally right while a 1-5 urgency
+# judgement is a point off.
+CORE_FIELDS = ("amount_due", "due_date", "reference_number", "is_suspicious")
+
 AMOUNT_TOLERANCE = 0.01
 URGENCY_TOLERANCE = 1
 
@@ -33,6 +39,29 @@ _PUNCTUATION = set(".,;:()[]{}\"'’“”«»/\\-—_")
 _ACCENTS = str.maketrans(
     "àâäáãåçèéêëìíîïñòóôöõùúûüýÿÀÂÄÁÃÅÇÈÉÊËÌÍÎÏÑÒÓÔÖÕÙÚÛÜÝ",
     "aaaaaaceeeeiiiinooooouuuuyyAAAAAACEEEEIIIINOOOOOUUUUY",
+)
+
+# Words that start the unit line printed under an organisation name on a
+# letterhead: "Revenu Québec" then "Direction principale des taxes".
+_UNIT_WORDS = frozenset(
+    {
+        "direction",
+        "service",
+        "services",
+        "bureau",
+        "division",
+        "departement",
+        "department",
+        "succursale",
+        "recouvrement",
+        "unite",
+        "cellule",
+        "secteur",
+        "greffe",
+        "office",
+        "branch",
+        "unit",
+    }
 )
 
 
@@ -43,6 +72,28 @@ def normalize_text(value: Any) -> str:
     text = str(value).translate(_ACCENTS).casefold()
     cleaned = "".join(" " if ch in _PUNCTUATION else ch for ch in text)
     return " ".join(cleaned.split())
+
+
+def normalize_issuer(value: Any) -> str:
+    """The organisation that sent the letter, without the unit line under it.
+
+    A letterhead prints the organisation on its first line and the unit on the
+    next: "Revenu Québec" then "Direction principale des taxes". The model often
+    reads both, and both name the same organisation. The unit is cut at the first
+    unit word, but only when at least one word comes before it, so an organisation
+    whose own name starts with such a word ("Service Canada") is left alone.
+
+    The comparison stays exact after the cut. Two different organisations are
+    never equated, and a name is never matched as a substring of another.
+    """
+    text = normalize_text(value)
+    if not text:
+        return ""
+    words = text.split()
+    for index, word in enumerate(words):
+        if index >= 1 and word in _UNIT_WORDS:
+            return " ".join(words[:index])
+    return text
 
 
 def normalize_reference(value: Any) -> str:
@@ -92,6 +143,8 @@ def field_matches(field: str, gold: Any, predicted: Any) -> bool:
         return normalize_reference(gold) == normalize_reference(predicted)
     if field == "currency":
         return normalize_text(gold) == normalize_text(predicted)
+    if field == "issuer":
+        return normalize_issuer(gold) == normalize_issuer(predicted)
     return normalize_text(gold) == normalize_text(predicted)
 
 
@@ -107,9 +160,15 @@ def field_scores(
 
 
 def goal_accuracy(per_letter: list[dict[str, Any]]) -> dict[str, Any]:
-    """Field accuracy per field, plus the exact-letter rate."""
+    """Field accuracy per field, plus the exact-letter rate.
+
+    Two exact-letter rates are reported. `all_fields_exact` needs every scored
+    field, `urgency` included. `core_fields_exact` needs the four fields an
+    operator acts on: amount_due, due_date, reference_number, is_suspicious.
+    """
     totals = {field: [0, 0] for field in SCORED_FIELDS}
     exact = 0
+    core_exact = 0
     for record in per_letter:
         hits = record.get("field_hits", {})
         all_hit = True
@@ -119,12 +178,15 @@ def goal_accuracy(per_letter: list[dict[str, Any]]) -> dict[str, Any]:
             totals[field][0] += 1 if hit else 0
             all_hit = all_hit and hit
         exact += 1 if all_hit else 0
+        core_exact += 1 if all(bool(hits.get(field, False)) for field in CORE_FIELDS) else 0
     count = len(per_letter)
     return {
         "per_field": {
             field: (hits / total if total else 0.0) for field, (hits, total) in totals.items()
         },
         "all_fields_exact": (exact / count if count else 0.0),
+        "core_fields_exact": (core_exact / count if count else 0.0),
+        "core_fields": list(CORE_FIELDS),
         "letters": count,
     }
 
@@ -383,6 +445,7 @@ def action_kind_accuracy(per_letter: list[dict[str, Any]]) -> float:
 
 __all__ = [
     "AMOUNT_TOLERANCE",
+    "CORE_FIELDS",
     "EXACT_FIELDS",
     "SCORED_FIELDS",
     "URGENCY_TOLERANCE",
@@ -393,6 +456,7 @@ __all__ = [
     "goal_accuracy",
     "latency_scores",
     "needs_human_scores",
+    "normalize_issuer",
     "normalize_reference",
     "normalize_text",
     "percentile",

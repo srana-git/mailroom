@@ -180,6 +180,26 @@ def test_the_results_table_reports_model_time_beside_wall_time():
     assert "| 120 |" in table
 
 
+def test_the_results_table_reports_the_core_fields_rate():
+    table = report.results_table([_payload()])
+    assert "| Core fields exact |" in table
+    assert "| 0.0% |" in table
+
+
+def test_the_doc_explains_the_issuer_and_core_field_rules():
+    text = report.render_evals_doc([_payload()])
+    assert "## Scoring rules" in text
+    assert "scored by organisation" in text
+    assert "core fields exact" in text
+
+
+def test_the_core_fields_rate_reads_as_not_available_when_the_run_predates_it():
+    payload = _payload()
+    del payload["metrics"]["goal"]["core_fields_exact"]
+    text = report.render_evals_doc([payload])
+    assert "predates the metric" in text
+
+
 def test_model_time_reads_as_not_available_when_the_run_predates_it():
     payload = _payload()
     for record in payload["per_letter"]:

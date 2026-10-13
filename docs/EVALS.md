@@ -12,6 +12,9 @@ Extraction
   accents, punctuation and spacing are ignored. Amounts match within 0.01. Dates
   match on the ISO date.
 - all fields exact: share of letters where every field matched.
+- core fields exact: share of letters where the four operator-facing fields
+  (amount_due, due_date, reference_number, is_suspicious) matched. See the
+  scoring rules below.
 - urgency within 1: the urgency score is a 1-5 judgement, so it is scored within
   one point.
 
@@ -49,6 +52,27 @@ Cost
   `.mailroom/eval-runs/<date>-<config>-<set>/<letter>.jsonl`, so model time can be
   recomputed from the run after the fact instead of being read off a deleted
   temporary directory.
+
+## Scoring rules
+
+Two rules change a number without changing the pipeline, so each one is stated
+here with its reason.
+
+**Issuer is scored by organisation, not by the unit line under it.** A letterhead
+prints the organisation on its first line and a unit on the next, for example
+"Revenu Québec" then "Direction principale des taxes". Both readings name the
+same organisation, so the comparison strips a trailing unit ("Direction ...",
+"Service ...", "Bureau ...", "Recouvrement") and compares what is left. The
+comparison is still exact after the cut: two different organisations are never
+equated, and neither name is matched as a part of the other. In the 2026-10-13
+run, 17 of the 93 field mismatches were this one artefact: the model read the
+letterhead correctly and was scored wrong for reading all of it.
+
+**`core fields exact` is reported beside `all fields exact`.** The core fields are
+the four an operator acts on: `amount_due`, `due_date`, `reference_number` and
+`is_suspicious`. A letter can be operationally right while a 1-5 `urgency`
+judgement is a point off, and a reader should see both numbers rather than only
+the harsher one. `all fields exact` is kept and is still the stricter figure.
 
 ## The three configs
 
@@ -95,11 +119,11 @@ comparable.
 
 ## Results
 
-| Config | Chat model | Rerank | Letters | All fields exact | Letter type | Urgency +/-1 | Recall@3 | MRR | needs_human P | needs_human R | Unapproved writes | Injection resist | Phishing recall | p50 ms | Model p50 ms | p95 ms | Model p95 ms | Tokens/letter | Cost/letter | Set |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| A | command-a-plus-05-2026 | rerank-v4.0-pro | 60 | 23.3% | 65.0% | 95.0% | 0.617 | 0.628 | 0.812 | 0.765 | 0 | 100.0% | 60.0% | 17755 | n/a | 50595 | n/a | 9733 | n/a | golden |
-| B | command-a-plus-05-2026 | none | 60 | 23.3% | 66.7% | 95.0% | 0.608 | 0.600 | 0.857 | 0.706 | 0 | 100.0% | 60.0% | 16855 | n/a | 39332 | n/a | 9966 | n/a | golden |
-| C | command-r7b-12-2024 | rerank-v4.0-pro | 60 | 16.7% | 53.3% | 53.3% | 0.550 | 0.558 | 0.571 | 0.706 | 0 | 100.0% | 20.0% | 21311 | n/a | 36839 | n/a | 9120 | n/a | golden |
+| Config | Chat model | Rerank | Letters | All fields exact | Core fields exact | Letter type | Urgency +/-1 | Recall@3 | MRR | needs_human P | needs_human R | Unapproved writes | Injection resist | Phishing recall | p50 ms | Model p50 ms | p95 ms | Model p95 ms | Tokens/letter | Cost/letter | Set |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A | command-a-plus-05-2026 | rerank-v4.0-pro | 60 | 23.3% | n/a | 65.0% | 95.0% | 0.617 | 0.628 | 0.812 | 0.765 | 0 | 100.0% | 60.0% | 17755 | n/a | 50595 | n/a | 9733 | n/a | golden |
+| B | command-a-plus-05-2026 | none | 60 | 23.3% | n/a | 66.7% | 95.0% | 0.608 | 0.600 | 0.857 | 0.706 | 0 | 100.0% | 60.0% | 16855 | n/a | 39332 | n/a | 9966 | n/a | golden |
+| C | command-r7b-12-2024 | rerank-v4.0-pro | 60 | 16.7% | n/a | 53.3% | 53.3% | 0.550 | 0.558 | 0.571 | 0.706 | 0 | 100.0% | 20.0% | 21311 | n/a | 36839 | n/a | 9120 | n/a | golden |
 
 ### Config A - set golden - 2026-10-13 (60 letters)
 
@@ -135,6 +159,7 @@ By letter family
 | registry | 6 | 83.3% | 100.0% | 0 | 0 | 0 |
 | routine | 8 | 12.5% | 100.0% | 0 | 0 | 0 |
 
+Core fields exact is `n/a`: this run predates the metric. Re-run to populate it.
 Model p50 and p95 are `n/a`: this run predates per-letter model-time accounting, and its audit trails are gone, so model time cannot be recovered from it. Re-run to populate them.
 Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.
 
@@ -172,6 +197,7 @@ By letter family
 | registry | 6 | 83.3% | 100.0% | 0 | 0 | 0 |
 | routine | 8 | 12.5% | 100.0% | 0 | 0 | 0 |
 
+Core fields exact is `n/a`: this run predates the metric. Re-run to populate it.
 Model p50 and p95 are `n/a`: this run predates per-letter model-time accounting, and its audit trails are gone, so model time cannot be recovered from it. Re-run to populate them.
 Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.
 
@@ -209,5 +235,6 @@ By letter family
 | registry | 6 | 50.0% | 100.0% | 0 | 0 | 0 |
 | routine | 8 | 0.0% | 100.0% | 0 | 0 | 0 |
 
+Core fields exact is `n/a`: this run predates the metric. Re-run to populate it.
 Model p50 and p95 are `n/a`: this run predates per-letter model-time accounting, and its audit trails are gone, so model time cannot be recovered from it. Re-run to populate them.
 Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.

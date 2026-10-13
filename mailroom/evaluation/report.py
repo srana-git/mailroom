@@ -27,6 +27,9 @@ Extraction
   accents, punctuation and spacing are ignored. Amounts match within 0.01. Dates
   match on the ISO date.
 - all fields exact: share of letters where every field matched.
+- core fields exact: share of letters where the four operator-facing fields
+  (amount_due, due_date, reference_number, is_suspicious) matched. See the
+  scoring rules below.
 - urgency within 1: the urgency score is a 1-5 judgement, so it is scored within
   one point.
 
@@ -64,6 +67,27 @@ Cost
   `.mailroom/eval-runs/<date>-<config>-<set>/<letter>.jsonl`, so model time can be
   recomputed from the run after the fact instead of being read off a deleted
   temporary directory.
+
+## Scoring rules
+
+Two rules change a number without changing the pipeline, so each one is stated
+here with its reason.
+
+**Issuer is scored by organisation, not by the unit line under it.** A letterhead
+prints the organisation on its first line and a unit on the next, for example
+"Revenu Québec" then "Direction principale des taxes". Both readings name the
+same organisation, so the comparison strips a trailing unit ("Direction ...",
+"Service ...", "Bureau ...", "Recouvrement") and compares what is left. The
+comparison is still exact after the cut: two different organisations are never
+equated, and neither name is matched as a part of the other. In the 2026-10-13
+run, 17 of the 93 field mismatches were this one artefact: the model read the
+letterhead correctly and was scored wrong for reading all of it.
+
+**`core fields exact` is reported beside `all fields exact`.** The core fields are
+the four an operator acts on: `amount_due`, `due_date`, `reference_number` and
+`is_suspicious`. A letter can be operationally right while a 1-5 `urgency`
+judgement is a point off, and a reader should see both numbers rather than only
+the harsher one. `all fields exact` is kept and is still the stricter figure.
 
 ## The three configs
 
@@ -157,6 +181,7 @@ RESULT_COLUMNS = (
     "Rerank",
     "Letters",
     "All fields exact",
+    "Core fields exact",
     "Letter type",
     "Urgency +/-1",
     "Recall@3",
@@ -202,15 +227,16 @@ def results_table(payloads: list[dict[str, Any]]) -> str:
         model_p50 = f"{latency['model_p50_ms']:.0f}" if model_time_recorded else "n/a"
         model_p95 = f"{latency['model_p95_ms']:.0f}" if model_time_recorded else "n/a"
         rows.append(
-            "| {config} | {chat} | {rerank} | {letters} | {exact} | {letter_type} | {urgency} "
-            "| {recall} | {mrr} | {prec} | {rec} | {writes} | {resist} | {phish} | {p50} "
-            "| {model_p50} | {p95} | {model_p95} "
+            "| {config} | {chat} | {rerank} | {letters} | {exact} | {core} | {letter_type} "
+            "| {urgency} | {recall} | {mrr} | {prec} | {rec} | {writes} | {resist} | {phish} "
+            "| {p50} | {model_p50} | {p95} | {model_p95} "
             "| {tokens} | {cost} | {case_set} |".format(
                 config=payload["config"],
                 chat=payload["models"]["chat"],
                 rerank=payload["models"]["rerank"] or "none",
                 letters=payload["letters"],
                 exact=_percent(m["goal"]["all_fields_exact"]),
+                core=_percent(m["goal"].get("core_fields_exact")),
                 letter_type=_percent(_per_field(goal, "letter_type")),
                 urgency=_percent(_per_field(goal, "urgency")),
                 recall=_number(retrieval.get("recall_at_3"), 3),
@@ -323,6 +349,11 @@ def render_evals_doc(payloads: list[dict[str, Any]]) -> str:
         parts.append(family_table(payload))
         parts.append("")
         usage = payload["metrics"]["usage"]
+        if "core_fields_exact" not in payload["metrics"]["goal"]:
+            parts.append(
+                "Core fields exact is `n/a`: this run predates the metric. Re-run to "
+                "populate it."
+            )
         model_time_recorded = any(
             "model_latency_ms" in record for record in payload.get("per_letter") or []
         )

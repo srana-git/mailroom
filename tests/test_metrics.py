@@ -23,6 +23,43 @@ def test_normalize_reference_keeps_alphanumerics_only():
     assert metrics.normalize_reference("RQ-2026/4471199 ") == "rq20264471199"
 
 
+def test_issuer_normalisation_strips_the_unit_line_under_the_name():
+    assert (
+        metrics.normalize_issuer("Revenu Québec Direction principale des taxes")
+        == "revenu quebec"
+    )
+    assert metrics.normalize_issuer("Ville de Montréal Service des finances") == "ville de montreal"
+
+
+def test_issuer_normalisation_cuts_a_unit_printed_on_the_next_line():
+    assert (
+        metrics.normalize_issuer("Agence du revenu du Canada\nDirection des retenues sur la paie")
+        == "agence du revenu du canada"
+    )
+
+
+def test_issuer_normalisation_cuts_a_trailing_recovery_unit():
+    assert (
+        metrics.normalize_issuer("Ville de Montréal Service des finances - Recouvrement")
+        == "ville de montreal"
+    )
+
+
+def test_issuer_normalisation_of_a_plain_name_is_unchanged():
+    assert metrics.normalize_issuer("Revenu Québec") == "revenu quebec"
+
+
+def test_issuer_normalisation_leaves_an_organisation_named_with_a_unit_word_alone():
+    """Nothing comes before the unit word, so there is nothing to cut."""
+    assert metrics.normalize_issuer("Service Canada") == "service canada"
+
+
+def test_issuer_normalisation_never_equates_two_organisations():
+    first = metrics.normalize_issuer("Ville de Montréal Service des finances")
+    second = metrics.normalize_issuer("Ville de Laval Service de la taxation")
+    assert first != second
+
+
 # -- field matching --------------------------------------------------------
 
 
@@ -76,6 +113,39 @@ def test_a_missing_reading_scores_every_field_as_a_miss():
     assert set(hits) == set(metrics.SCORED_FIELDS)
 
 
+def test_the_issuer_field_matches_an_organisation_against_its_unit_line():
+    assert (
+        metrics.field_matches(
+            "issuer", "Revenu Québec", "Revenu Québec Direction principale des taxes"
+        )
+        is True
+    )
+    assert (
+        metrics.field_matches(
+            "issuer", "Ville de Montréal", "Ville de Montréal Service des finances"
+        )
+        is True
+    )
+
+
+def test_the_issuer_field_still_rejects_a_different_organisation():
+    assert metrics.field_matches("issuer", "Ville de Montréal", "Ville de Laval") is False
+    assert (
+        metrics.field_matches(
+            "issuer", "Revenu Québec", "Ville de Montréal Service des finances"
+        )
+        is False
+    )
+
+
+def test_the_issuer_field_is_not_a_contains_match():
+    assert metrics.field_matches("issuer", "Exemple", "Exemple Télécom") is False
+
+
+def test_the_deaccented_spelling_of_an_issuer_still_matches():
+    assert metrics.field_matches("issuer", "Revenu Quebec", "Revenu Québec") is True
+
+
 # -- goal accuracy ---------------------------------------------------------
 
 
@@ -115,6 +185,29 @@ def test_empty_goal_accuracy_does_not_divide_by_zero():
     block = metrics.goal_accuracy([])
     assert block["letters"] == 0
     assert block["all_fields_exact"] == 0.0
+    assert block["core_fields_exact"] == 0.0
+
+
+def test_core_fields_exact_hits_when_only_the_soft_fields_miss():
+    record = _record(field_hits=dict.fromkeys(metrics.SCORED_FIELDS, True) | {"urgency": False})
+    block = metrics.goal_accuracy([record])
+    assert block["all_fields_exact"] == 0.0
+    assert block["core_fields_exact"] == 1.0
+
+
+def test_core_fields_exact_misses_when_an_operated_field_misses():
+    record = _record(field_hits=dict.fromkeys(metrics.SCORED_FIELDS, True) | {"amount_due": False})
+    assert metrics.goal_accuracy([record])["core_fields_exact"] == 0.0
+
+
+def test_the_core_fields_are_the_four_an_operator_acts_on():
+    block = metrics.goal_accuracy([_record()])
+    assert set(block["core_fields"]) == {
+        "amount_due",
+        "due_date",
+        "reference_number",
+        "is_suspicious",
+    }
 
 
 # -- retrieval -------------------------------------------------------------
