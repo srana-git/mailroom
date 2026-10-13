@@ -20,7 +20,7 @@ import json
 import math
 import re
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 
 from .config import EMBED_DIMENSION
@@ -68,6 +68,54 @@ REFERENCE_PATTERNS = (
 )
 
 AMOUNT_PATTERN = r"([0-9][0-9\s .,]*[0-9]|[0-9])\s*(?:\$|CA\$|CAD|USD|EUR)"
+
+
+# Words that mark a printed date as the deadline rather than as the letter's own
+# date. Matched against accent-stripped, punctuation-stripped text.
+DEADLINE_CUES = (
+    "due date",
+    "payment due",
+    "payment date",
+    "date limite",
+    "date d echeance",
+    "date de coupure",
+    "date de resiliation",
+    "echeance",
+    "deadline",
+    "au plus tard",
+    "avant le",
+    "expire le",
+    "expires",
+    "takes effect on",
+    "effective on",
+    "effective date",
+    "reach us by",
+    "received by",
+    "payable before",
+)
+_CUE_WINDOW = 60
+
+_RELATIVE_DELAY = re.compile(
+    r"\b(?:within|dans les|dans un delai de|sous)\s+(\d{1,3})\s*"
+    r"(jour|jours|day|days|heure|heures|hour|hours|semaine|semaines|week|weeks|mois|month|months)\b"
+)
+_DELAY_UNITS: dict[str, tuple[str, int]] = {
+    "jour": ("days", 1),
+    "jours": ("days", 1),
+    "day": ("days", 1),
+    "days": ("days", 1),
+    "semaine": ("days", 7),
+    "semaines": ("days", 7),
+    "week": ("days", 7),
+    "weeks": ("days", 7),
+    "mois": ("days", 30),
+    "month": ("days", 30),
+    "months": ("days", 30),
+    "heure": ("hours", 1),
+    "heures": ("hours", 1),
+    "hour": ("hours", 1),
+    "hours": ("hours", 1),
+}
 
 
 @dataclass
@@ -350,20 +398,76 @@ def _parse_number(digits: str) -> float | None:
 
 
 def find_due_date(text: str) -> date | None:
+    """The deadline the letter states, following the documented rule.
+
+    An explicit deadline wins: a date printed next to a deadline word. When the
+    letter prints no deadline and gives only a relative delay ("within 30 days"),
+    the deadline is counted from the date the letter was written on. With no date
+    to count from there is no deadline, and the answer is None; the date a letter
+    was written on is not a deadline by itself.
+
+    A delay counted in hours does not become a deadline. "You have 48 hours" is
+    the shape of an urgency threat, not of an invoice term, and a date invented
+    for it would be a date nobody stated.
+
+    The development gold set was written before this rule, so the payroll and OCR
+    letters that give a relative delay and record None there come back with a
+    computed date. See "Scoring rules" in docs/EVALS.md.
+    """
+    for position, value in _find_dates(text):
+        window = normalize_text(text[max(0, position - _CUE_WINDOW) : position])
+        if any(cue in window for cue in DEADLINE_CUES):
+            return value
+    delay = _relative_delay_days(text)
+    letter_date = find_letter_date(text)
+    if delay is not None and letter_date is not None:
+        return letter_date + timedelta(days=delay)
+    return None
+
+
+def _find_dates(text: str) -> list[tuple[int, date]]:
+    """Every date in the letter with the position it starts at, in reading order."""
     lowered = text.casefold()
+    found: list[tuple[int, date]] = []
     for match in re.finditer(r"\b(\d{4})-(\d{2})-(\d{2})\b", text):
-        return _safe_date(int(match.group(1)), int(match.group(2)), int(match.group(3)))
-    for match in re.finditer(r"\b(\d{1,2})\s+([A-Za-zéûôàè]+)\s+(\d{4})\b", lowered):
+        value = _safe_date(int(match.group(1)), int(match.group(2)), int(match.group(3)))
+        if value is not None:
+            found.append((match.start(), value))
+    for match in re.finditer(r"\b(\d{1,2})(?:er|e|ère|ere)?\s+([A-Za-zéûôàè]+)\s+(\d{4})\b", lowered):
         month = MONTHS_FR.get(normalize_text(match.group(2))) or MONTHS_EN.get(match.group(2))
         if month:
-            return _safe_date(int(match.group(3)), month, int(match.group(1)))
+            value = _safe_date(int(match.group(3)), month, int(match.group(1)))
+            if value is not None:
+                found.append((match.start(), value))
     for match in re.finditer(r"\b([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})\b", lowered):
         month = MONTHS_EN.get(match.group(1))
         if month:
-            return _safe_date(int(match.group(3)), month, int(match.group(2)))
+            value = _safe_date(int(match.group(3)), month, int(match.group(2)))
+            if value is not None:
+                found.append((match.start(), value))
     for match in re.finditer(r"\b(\d{1,2})[/.](\d{1,2})[/.](\d{4})\b", text):
-        return _safe_date(int(match.group(3)), int(match.group(2)), int(match.group(1)))
-    return None
+        value = _safe_date(int(match.group(3)), int(match.group(2)), int(match.group(1)))
+        if value is not None:
+            found.append((match.start(), value))
+    found.sort(key=lambda item: item[0])
+    return found
+
+
+def find_letter_date(text: str) -> date | None:
+    """The date the letter was written on: the first date printed in it."""
+    dates = _find_dates(text)
+    return dates[0][1] if dates else None
+
+
+def _relative_delay_days(text: str) -> int | None:
+    match = _RELATIVE_DELAY.search(normalize_text(text))
+    if not match:
+        return None
+    count = int(match.group(1))
+    unit, factor = _DELAY_UNITS.get(match.group(2), ("days", 1))
+    if unit == "hours":
+        return None
+    return count * factor
 
 
 def _safe_date(year: int, month: int, day: int) -> date | None:
@@ -607,6 +711,7 @@ def build_action(text: str, fields: dict[str, Any]) -> dict[str, Any]:
 
 
 __all__ = [
+    "DEADLINE_CUES",
     "FakeBackend",
     "build_action",
     "detect_language",
@@ -616,6 +721,7 @@ __all__ = [
     "find_company_query",
     "find_due_date",
     "find_issuer",
+    "find_letter_date",
     "find_payee",
     "find_reference",
     "hash_embedding",

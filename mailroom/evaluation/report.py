@@ -89,6 +89,19 @@ the four an operator acts on: `amount_due`, `due_date`, `reference_number` and
 judgement is a point off, and a reader should see both numbers rather than only
 the harsher one. `all fields exact` is kept and is still the stricter figure.
 
+**`due_date` follows the stated deadline rule.** `due_date` is a calendar deadline
+printed in the letter. When the letter prints its own date and gives a relative
+delay instead ("within 30 days"), the deadline is counted from that date; when
+there is no date to count from, `due_date` is null. The date a letter was written
+on is not a deadline by itself.
+
+Three letters in the development set state a relative delay and record null:
+`ocr-03` ("reconcile within 30 days"), `payroll-01` ("within 30 days") and
+`payroll-03` ("within 20 days"). Their gold was written before this rule, and they
+are scored against the gold as it stands, so a correct answer under the rule is
+recorded as a miss on those three. The rule is published rather than quietly
+loosened, and the gold is left alone: see `evals/GOLD-CHANGELOG.md`.
+
 ## The three configs
 
 - A: best Command model, Embed v4, Rerank. The reference configuration.
