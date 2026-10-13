@@ -1,0 +1,22 @@
+{
+  "id": "ocr-02",
+  "family": "ocr",
+  "language": "fr",
+  "letter_text": "Ville de Montreal\nService de la taxation\n\nExemple Media Inc.\n1199999004\nMontreal (Quebec)\n\nLe 9 octobre 2026\n\nObjet : Compte de taxes - deuxieme versement\n\nMadame, Monsieur,\n\nLe montant de 4 120,00 $ CAD est du sur votre compte.\n\nCompte : 1199999004-MTL\nReference : MTL-2026-33440\nDate limite : 12 novembre 2026\n\nUne penalite de 5 pour cent s'ajoute apres ~~ 1a date limite.\n\nPage 1 de 2\n\nService de la taxation",
+  "gold": {
+    "issuer": "Ville de Montreal",
+    "letter_type": "payment_demand",
+    "language": "fr",
+    "reference_number": "MTL-2026-33440",
+    "amount_due": 4120.0,
+    "currency": "CAD",
+    "due_date": "2026-11-12",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-MUN-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

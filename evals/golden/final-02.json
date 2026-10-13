@@ -1,0 +1,22 @@
+{
+  "id": "final-02",
+  "family": "final",
+  "language": "fr",
+  "letter_text": "Hydro-Québec\nRecouvrement commercial\n\nExemple Média Inc.\n1199999004\nMontréal (Québec)\n\nLe 7 octobre 2026\n\nAVIS FINAL\n\nObjet : Avis de coupure du service\n\nMadame, Monsieur,\n\nUn solde de 2 145,60 $ CAD demeure impayé sur votre compte malgré deux avis précédents.\n\nCompte : 1199999004-HQ\nRéférence : HQ-2026-8899001\nDate de coupure : 21 octobre 2026\n\nLe service sera interrompu à cette date si le solde n'est pas acquitté. Des frais de rétablissement s'appliquent.\n\nRecouvrement commercial",
+  "gold": {
+    "issuer": "Hydro-Québec",
+    "letter_type": "final_notice",
+    "language": "fr",
+    "reference_number": "HQ-2026-8899001",
+    "amount_due": 2145.6,
+    "currency": "CAD",
+    "due_date": "2026-10-21",
+    "required_action": "pay",
+    "urgency": 5,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-UTL-002"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

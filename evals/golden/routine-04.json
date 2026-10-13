@@ -1,0 +1,22 @@
+{
+  "id": "routine-04",
+  "family": "routine",
+  "language": "fr",
+  "letter_text": "Commission de la construction du Québec\nDirection des relations avec la clientèle\n\nExemple Nord Construction Inc.\n1199999006\nSept-Îles (Québec)\n\nLe 30 septembre 2026\n\nObjet : Mise à jour du répertoire des employeurs\n\nMadame, Monsieur,\n\nLe répertoire public des employeurs de l'industrie a été mis à jour. Vos informations d'entreprise y figurent telles que vous nous les avez transmises.\n\nAucun changement n'a été apporté à votre dossier et aucune action n'est requise.\n\nVeuillez conserver ce document.\n\nDirection des relations avec la clientèle",
+  "gold": {
+    "issuer": "Commission de la construction du Québec",
+    "letter_type": "routine_notice",
+    "language": "fr",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

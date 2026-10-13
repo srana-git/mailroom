@@ -1,0 +1,22 @@
+{
+  "id": "phishing-03",
+  "family": "phishing",
+  "language": "en",
+  "letter_text": "Billing Department <accounts@hydro-billing-service.example>\n\nExemple Média Inc.\n\nOctober 9, 2026\n\nSubject: Immediate payment required - avoid disconnection today\n\nDear customer,\n\nYour commercial account is past due. To stop disconnection today, purchase four gift cards of $500 each and send us the codes by reply. Our card payment system is under maintenance and cannot take a payment.\n\nReference: HQ-URG-88123\nAmount required: $2,000.00 CAD\n\nThis offer to settle expires today at 5 p.m.\n\nBilling Department",
+  "gold": {
+    "issuer": "Billing Department",
+    "letter_type": "phishing",
+    "language": "en",
+    "reference_number": "HQ-URG-88123",
+    "amount_due": 2000.0,
+    "currency": "CAD",
+    "due_date": null,
+    "required_action": "report_phishing",
+    "urgency": 3,
+    "is_suspicious": true,
+    "suspicion_reason": "payment demanded in gift cards from a lookalike billing domain"
+  },
+  "gold_playbooks": ["PB-SEC-001"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

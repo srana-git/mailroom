@@ -1,0 +1,22 @@
+{
+  "id": "payment-06",
+  "family": "payment",
+  "language": "fr",
+  "letter_text": "Revenu Québec\nDirection principale des taxes\n\nBoulangerie Exemple Ltée\n1199999002\nQuébec (Québec)\n\nLe 9 octobre 2026\n\nObjet : Avis de cotisation - solde dû\n\nMadame, Monsieur,\n\nAprès vérification de votre déclaration, un solde de 912,30 $ CAD est dû sur votre compte.\n\nCompte : 1199999002-01\nRéférence : RQ-2026-4488002\nDate limite : 9 novembre 2026\n\nLes intérêts courent à compter du lendemain de la date limite.\n\nDirection principale des taxes",
+  "gold": {
+    "issuer": "Revenu Québec",
+    "letter_type": "payment_demand",
+    "language": "fr",
+    "reference_number": "RQ-2026-4488002",
+    "amount_due": 912.3,
+    "currency": "CAD",
+    "due_date": "2026-11-09",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-TAX-003"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

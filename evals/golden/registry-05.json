@@ -1,0 +1,22 @@
+{
+  "id": "registry-05",
+  "family": "registry",
+  "language": "en",
+  "letter_text": "Registraire des entreprises du Québec\nDirection des déclarations\n\nExemple Média Inc.\n1199999004\nMontréal (Québec)\n\nOctober 3, 2026\n\nSubject: Annual declaration reminder\n\nThe annual declaration for Exemple Média Inc. is due.\n\nCompany number: 1199999004\nReference: RE-2026-119480\nFiling deadline: November 3, 2026\n\nOne of your directors changed in June. The declaration is the place to record that change.\n\nDirection des déclarations",
+  "gold": {
+    "issuer": "Registraire des entreprises du Québec",
+    "letter_type": "registry_declaration_reminder",
+    "language": "en",
+    "reference_number": "RE-2026-119480",
+    "amount_due": null,
+    "currency": null,
+    "due_date": "2026-11-03",
+    "required_action": "file_declaration",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-REG-001", "PB-REG-003"],
+  "gold_action_kind": "file",
+  "gold_needs_human": false
+}

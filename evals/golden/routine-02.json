@@ -1,0 +1,22 @@
+{
+  "id": "routine-02",
+  "family": "routine",
+  "language": "fr",
+  "letter_text": "Ville de Montréal\nService des finances\n\nExemple Média Inc.\nMatricule 1199999004-MTL\n\nLe 5 octobre 2026\n\nObjet : Avis de modification du calendrier de perception\n\nMadame, Monsieur,\n\nLe calendrier de perception des taxes municipales sera modifié en 2027. Les deux versements habituels sont remplacés par quatre versements trimestriels, sans changement au montant annuel.\n\nAucune action n'est requise de votre part. Le premier avis de 2027 indiquera les nouvelles dates.\n\nVeuillez conserver cette lettre à votre dossier.\n\nService des finances",
+  "gold": {
+    "issuer": "Ville de Montréal",
+    "letter_type": "routine_notice",
+    "language": "fr",
+    "reference_number": "1199999004-MTL",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

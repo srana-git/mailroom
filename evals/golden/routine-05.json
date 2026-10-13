@@ -1,0 +1,22 @@
+{
+  "id": "routine-05",
+  "family": "routine",
+  "language": "en",
+  "letter_text": "Exemple Assurances\nService des renouvellements\n\nExemple Toiture SENC\n1199999003\nLaval (Québec)\n\nOctober 6, 2026\n\nSubject: Copy of your liability policy wording for the coming year\n\nDear client,\n\nPlease find enclosed a copy of the policy wording that will apply to your liability contract for the coming year. The coverage and the premium are unchanged.\n\nThe enclosed document replaces the wording we sent last year. Please keep it with your policy file.\n\nNo action is required and no payment is due.\n\nService des renouvellements",
+  "gold": {
+    "issuer": "Exemple Assurances",
+    "letter_type": "routine_notice",
+    "language": "en",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

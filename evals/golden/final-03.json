@@ -1,0 +1,22 @@
+{
+  "id": "final-03",
+  "family": "final",
+  "language": "en",
+  "letter_text": "Agence du revenu du Canada\nDirection principale des taxes\n\nExemple Nord Construction Inc.\n1199999006\nSept-Îles (Québec)\n\nOctober 6, 2026\n\nFINAL NOTICE\n\nSubject: Final notice - balance owing on assessment\n\nDear client,\n\nAn assessment of $12,450.00 CAD on your account remains unpaid. This assessment includes a payroll amount we did not report, which we believe belongs to a subcontractor.\n\nAccount: 1199999006-RP0001\nReference: ARC-2026-60231\nDeadline: October 22, 2026\n\nYou may pay the balance or file a notice of objection before this date. After this date, collection action may follow without further notice.\n\nDirection principale des taxes",
+  "gold": {
+    "issuer": "Agence du revenu du Canada",
+    "letter_type": "final_notice",
+    "language": "en",
+    "reference_number": "ARC-2026-60231",
+    "amount_due": 12450.0,
+    "currency": "CAD",
+    "due_date": "2026-10-22",
+    "required_action": "contest",
+    "urgency": 5,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-TAX-001", "PB-TAX-004"],
+  "gold_action_kind": "contest",
+  "gold_needs_human": false
+}

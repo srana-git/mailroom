@@ -1,0 +1,22 @@
+{
+  "id": "payroll-04",
+  "family": "payroll",
+  "language": "en",
+  "letter_text": "Court of Québec\nSmall Claims Division\n\nExemple Nord Construction Inc.\n1199999006\nSept-Îles (Québec)\n\nOctober 7, 2026\n\nSubject: Notice of garnishment - case 2026-7744112\n\nA garnishment order has been issued against your company in the matter of Mercier v. 9185-2204 Québec Inc.\n\nCase: 2026-7744112\nAmount to be withheld: $3,200.00 CAD\nThe garnishment takes effect on October 19, 2026.\n\nAs garnishee, you must withhold funds from any amount you owe to the debtor. This order does not concern one of your employees. It names a company whose money you may be holding.\n\nCourt of Québec",
+  "gold": {
+    "issuer": "Court of Québec",
+    "letter_type": "payroll_remittance",
+    "language": "en",
+    "reference_number": "2026-7744112",
+    "amount_due": 3200.0,
+    "currency": "CAD",
+    "due_date": "2026-10-19",
+    "required_action": "escalate",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-PAY-005"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

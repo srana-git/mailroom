@@ -1,0 +1,22 @@
+{
+  "id": "phishing-02",
+  "family": "phishing",
+  "language": "fr",
+  "letter_text": "Agence du revenu du Canada <remboursement@arc-remboursement.example>\n\nBoulangerie Exemple Ltée\n\nLe 7 octobre 2026\n\nAVIS DE REMBOURSEMENT - ACTION IMMÉDIATE\n\nMadame, Monsieur,\n\nUn remboursement de 4 812,00 $ CAD vous est destiné. Pour le recevoir, vous devez confirmer vos coordonnées bancaires dans les 48 heures.\n\nRemplissez le formulaire au lien suivant :\n\nhttps://arc-remboursement.example/depot\n\nAucun remboursement ne sera versé sans cette confirmation.\n\nService des remboursements",
+  "gold": {
+    "issuer": "Agence du revenu du Canada",
+    "letter_type": "phishing",
+    "language": "fr",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "report_phishing",
+    "urgency": 3,
+    "is_suspicious": true,
+    "suspicion_reason": "unsolicited refund from a lookalike domain asking for banking details"
+  },
+  "gold_playbooks": ["PB-SEC-001"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

@@ -1,0 +1,22 @@
+{
+  "id": "payroll-05",
+  "family": "payroll",
+  "language": "fr",
+  "letter_text": "Agence du revenu du Canada\nBureau des services de paie\n\nExemple Nord Construction Inc.\n1199999006\nSept-Îles (Québec)\n\nLe 3 octobre 2026\n\nObjet : Demande de correction d'un relevé d'emploi\n\nMadame, Monsieur,\n\nLe relevé d'emploi produit pour la période se terminant le 15 août 2026 contient une erreur sur les heures assurables.\n\nCompte : 1199999006-RP0001\nRéférence : ARC-2026-61502\n\nVeuillez transmettre le relevé modifié dans les cinq jours, en précisant le numéro de l'amendement.\n\nBureau des services de paie",
+  "gold": {
+    "issuer": "Agence du revenu du Canada",
+    "letter_type": "payroll_remittance",
+    "language": "fr",
+    "reference_number": "ARC-2026-61502",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "provide_documents",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-PAY-006"],
+  "gold_action_kind": "send",
+  "gold_needs_human": false
+}

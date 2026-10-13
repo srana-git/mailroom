@@ -1,0 +1,22 @@
+{
+  "id": "routine-07",
+  "family": "routine",
+  "language": "en",
+  "letter_text": "Papeterie Exemple\nService à la clientèle\n\nExemple Conseil Inc.\n1199999005\nGatineau (Québec)\n\nOctober 7, 2026\n\nSubject: Your account statement shows a credit balance of $0.00\n\nDear customer,\n\nYour account with us is up to date. The enclosed statement covers the period from July 1 to September 30 and shows a balance of $0.00.\n\nWe have also moved your account to paperless statements. Statements will be sent to facturation@papeterie-exemple.example from the next period.\n\nNo action is required.\n\nService à la clientèle",
+  "gold": {
+    "issuer": "Papeterie Exemple",
+    "letter_type": "routine_notice",
+    "language": "en",
+    "reference_number": null,
+    "amount_due": 0.0,
+    "currency": "CAD",
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

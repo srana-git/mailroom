@@ -1,0 +1,22 @@
+{
+  "id": "final-05",
+  "family": "final",
+  "language": "en",
+  "letter_text": "Ville de Montréal\nService des finances - Recouvrement\n\nExemple Média Inc.\n1199999004\nMontréal (Québec)\n\nOctober 5, 2026\n\nFINAL NOTICE\n\nSubject: Final notice before a tax sale\n\nDear owner,\n\nTwo instalments of municipal taxes remain unpaid on the property you own. The total is $9,930.44 CAD.\n\nAccount: 1199999004-MTL\nReference: MTL-2026-33108\nDeadline: October 26, 2026\n\nAfter this date, a certificate of the unpaid amount may be issued. Interest of 1 percent per month applies.\n\nService des finances",
+  "gold": {
+    "issuer": "Ville de Montréal",
+    "letter_type": "final_notice",
+    "language": "en",
+    "reference_number": "MTL-2026-33108",
+    "amount_due": 9930.44,
+    "currency": "CAD",
+    "due_date": "2026-10-26",
+    "required_action": "pay",
+    "urgency": 5,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-MUN-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

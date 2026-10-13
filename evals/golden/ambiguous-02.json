@@ -1,0 +1,22 @@
+{
+  "id": "ambiguous-02",
+  "family": "ambiguous",
+  "language": "fr",
+  "letter_text": "Agence du revenu du Canada\n\nExemple Nord Construction Inc.\n1199999006\nSept-Îles (Québec)\n\nLe 7 octobre 2026\n\nObjet : Suivi de dossier\n\nMadame, Monsieur,\n\nNous donnons suite au dossier ouvert par Revenu Québec concernant votre compte. Le présent suivi porte sur le dossier ARC-2026-62110, alors que la correspondance antérieure portait sur le dossier RQ-2026-4512330.\n\nUne somme est en cause, mais le montant exact sera précisé dans un avis distinct qui n'a pas encore été produit.\n\nVeuillez nous indiquer lequel des deux dossiers doit recevoir votre réponse.\n\nDirection du soutien",
+  "gold": {
+    "issuer": "Agence du revenu du Canada",
+    "letter_type": "routine_notice",
+    "language": "fr",
+    "reference_number": "ARC-2026-62110",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "escalate",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-003"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

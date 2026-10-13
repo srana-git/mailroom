@@ -1,0 +1,22 @@
+{
+  "id": "ambiguous-05",
+  "family": "ambiguous",
+  "language": "en",
+  "letter_text": "Exemple Assurances\n\nExemple Toiture SENC\n1199999003\nLaval (Québec)\n\nOctober 7, 2026\n\nSubject: Your file\n\nDear client,\n\nPlease refer to the schedule attached to our previous communication, which sets out the amounts and the dates that apply to your file.\n\nThat schedule is not attached to this letter, and this letter does not repeat its contents. The amounts and the dates therefore cannot be confirmed from this message alone.\n\nPlease do not rely on this letter as a statement of what is owed.\n\nService à la clientèle",
+  "gold": {
+    "issuer": "Exemple Assurances",
+    "letter_type": "routine_notice",
+    "language": "en",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "escalate",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-003"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

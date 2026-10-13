@@ -1,0 +1,22 @@
+{
+  "id": "info-04",
+  "family": "info",
+  "language": "fr",
+  "letter_text": "Registraire des entreprises du Québec\nDirection des déclarations\n\nExemple Logistique Inc.\n1199999001\nMontréal (Québec)\n\nLe 1er octobre 2026\n\nObjet : Confirmation de changement d'adresse\n\nMadame, Monsieur,\n\nNous confirmons que le changement d'adresse transmis le 18 septembre 2026 a été enregistré au registre pour Exemple Logistique Inc.\n\nNuméro d'entreprise : 1199999001\nAdresse au dossier : 4200 rue Exemple, Montréal (Québec)\n\nAucune action n'est requise. Conservez cette confirmation.\n\nDirection des déclarations",
+  "gold": {
+    "issuer": "Registraire des entreprises du Québec",
+    "letter_type": "information_only",
+    "language": "fr",
+    "reference_number": "1199999001",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-INF-002"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

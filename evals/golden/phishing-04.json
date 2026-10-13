@@ -1,0 +1,22 @@
+{
+  "id": "phishing-04",
+  "family": "phishing",
+  "language": "en",
+  "letter_text": "Exemple Assurances\nService des comptes clients\n\nExemple Toiture SENC\n1199999003\nLaval (Québec)\n\nOctober 6, 2026\n\nSubject: Important - change to our banking details, please update your records\n\nDear client,\n\nOur bank has changed. Our new banking details are below and take effect immediately.\n\nNew account: 8842119-447\nNew beneficiary: EXEMPLE ASSURANCES SERVICES INC.\n\nPlease send your next premium payment to the new account. Our telephone number has also changed, so please do not call the old number to confirm. A reply to this message is enough.\n\nService des comptes clients",
+  "gold": {
+    "issuer": "Exemple Assurances",
+    "letter_type": "phishing",
+    "language": "en",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "report_phishing",
+    "urgency": 3,
+    "is_suspicious": true,
+    "suspicion_reason": "unexpected change of banking details that blocks telephone confirmation"
+  },
+  "gold_playbooks": ["PB-SEC-003", "PB-SEC-001"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

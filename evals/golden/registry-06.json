@@ -1,0 +1,22 @@
+{
+  "id": "registry-06",
+  "family": "registry",
+  "language": "fr",
+  "letter_text": "Registraire des entreprises du Québec\nDirection des déclarations\n\nExemple Conseil Inc.\n1199999005\nGatineau (Québec)\n\nLe 4 octobre 2026\n\nObjet : Rappel de déclaration annuelle\n\nMadame, Monsieur,\n\nLa déclaration annuelle de Exemple Conseil Inc. n'a pas été déposée.\n\nNuméro d'entreprise : 1199999005\nRéférence : RE-2026-119612\nDate limite de dépôt : 4 novembre 2026\n\nLe dépôt peut se faire en ligne. Aucun paiement n'est exigé pour cette déclaration.\n\nDirection des déclarations",
+  "gold": {
+    "issuer": "Registraire des entreprises du Québec",
+    "letter_type": "registry_declaration_reminder",
+    "language": "fr",
+    "reference_number": "RE-2026-119612",
+    "amount_due": null,
+    "currency": null,
+    "due_date": "2026-11-04",
+    "required_action": "file_declaration",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-REG-001"],
+  "gold_action_kind": "file",
+  "gold_needs_human": false
+}

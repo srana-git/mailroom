@@ -1,0 +1,22 @@
+{
+  "id": "info-06",
+  "family": "info",
+  "language": "fr",
+  "letter_text": "Ville de Laval\nService de la taxation\n\nExemple Toiture SENC\n1199999003\nLaval (Québec)\n\nLe 28 septembre 2026\n\nObjet : Avis d'information - programme de versements égaux\n\nMadame, Monsieur,\n\nLe programme de versements égaux est offert de nouveau pour 2027. L'inscription se fait avant le 15 janvier 2027 pour les propriétaires qui le souhaitent.\n\nCeci est un avis d'information. Aucune action n'est requise si vous préférez payer selon le calendrier habituel.\n\nService de la taxation",
+  "gold": {
+    "issuer": "Ville de Laval",
+    "letter_type": "information_only",
+    "language": "fr",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-INF-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

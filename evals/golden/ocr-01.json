@@ -1,0 +1,22 @@
+{
+  "id": "ocr-01",
+  "family": "ocr",
+  "language": "en",
+  "letter_text": "Revenu Quebec\nDirection principale des taxes\n\nExemp1e Logistique 1nc.\n1199999001\nMontreal (Quebec)\n\nOctober 9, 2026\n\nSubject: Notice of assessment - balance owing\n\nDear client,\n\nA ba1ance of $1,830.00 CAD is owing on your account.\n\nAccount: 1199999001-01\nReference: RQ-2026-4501001\nDue date: November 18, 2026\n\nInterest is added from the day after ~~ the due date.\n\nPage 1 of 1\n\nDirection principale des taxes",
+  "gold": {
+    "issuer": "Revenu Quebec",
+    "letter_type": "payment_demand",
+    "language": "en",
+    "reference_number": "RQ-2026-4501001",
+    "amount_due": 1830.0,
+    "currency": "CAD",
+    "due_date": "2026-11-18",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-TAX-002"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

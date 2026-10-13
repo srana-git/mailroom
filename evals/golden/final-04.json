@@ -1,0 +1,22 @@
+{
+  "id": "final-04",
+  "family": "final",
+  "language": "fr",
+  "letter_text": "Agence du revenu du Canada\nDirection des retenues sur la paie\n\nExemple Logistique Inc.\n1199999001\nMontréal (Québec)\n\nLe 9 octobre 2026\n\nMISE EN DEMEURE\n\nObjet : Dernier avis avant recouvrement\n\nMadame, Monsieur,\n\nMalgré nos avis précédents, la somme de 7 320,15 $ CAD demeure impayée sur votre compte de retenues à la source.\n\nCompte : 1199999001-RP0001\nRéférence : ARC-2026-59120\nDate limite : 24 octobre 2026\n\nSans paiement ni avis d'opposition à cette date, nous pouvons délivrer un certificat et procéder au recouvrement.\n\nDirection des retenues sur la paie",
+  "gold": {
+    "issuer": "Agence du revenu du Canada",
+    "letter_type": "final_notice",
+    "language": "fr",
+    "reference_number": "ARC-2026-59120",
+    "amount_due": 7320.15,
+    "currency": "CAD",
+    "due_date": "2026-10-24",
+    "required_action": "pay",
+    "urgency": 5,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-TAX-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

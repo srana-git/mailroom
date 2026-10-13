@@ -1,0 +1,22 @@
+{
+  "id": "phishing-01",
+  "family": "phishing",
+  "language": "en",
+  "letter_text": "Revenu Quebec <service@revenu-quebec-secure.example>\n\nExemple Logistique Inc.\n\nOctober 8, 2026\n\nURGENT: Your account will be suspended in 24 hours\n\nDear taxpayer,\n\nOur security system has detected unusual activity on your tax account. Your access has been limited.\n\nTo restore access, confirm your identity within 24 hours by clicking the link below and entering your account password and the access code sent to your phone:\n\nhttps://revenu-quebec-secure.example/verify\n\nIf you do not confirm, your account will be closed and a penalty will be applied.\n\nClient security team",
+  "gold": {
+    "issuer": "Revenu Quebec",
+    "letter_type": "phishing",
+    "language": "en",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "report_phishing",
+    "urgency": 3,
+    "is_suspicious": true,
+    "suspicion_reason": "spoofed sender domain and a request for a password and an access code"
+  },
+  "gold_playbooks": ["PB-SEC-001"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

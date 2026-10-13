@@ -1,0 +1,22 @@
+{
+  "id": "phishing-05",
+  "family": "phishing",
+  "language": "fr",
+  "letter_text": "Registraire des entreprises <verification@registraire-verif.example>\n\nExemple Conseil Inc.\n1199999005\nGatineau (Québec)\n\nLe 8 octobre 2026\n\nObjet : Vérification obligatoire de votre dossier\n\nMadame, Monsieur,\n\nDans le cadre d'une vérification de conformité, nous devons recevoir les documents suivants dans les 48 heures :\n\n- une copie des statuts de constitution ;\n- la liste des administrateurs avec leurs adresses ;\n- un spécimen de chèque annulé.\n\nSans ces documents, votre immatriculation sera suspendue.\n\nService de la vérification",
+  "gold": {
+    "issuer": "Registraire des entreprises",
+    "letter_type": "phishing",
+    "language": "fr",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "report_phishing",
+    "urgency": 3,
+    "is_suspicious": true,
+    "suspicion_reason": "unsolicited request for corporate documents including a cancelled cheque, from a lookalike domain"
+  },
+  "gold_playbooks": ["PB-SEC-004", "PB-SEC-001"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

@@ -1,0 +1,22 @@
+{
+  "id": "info-05",
+  "family": "info",
+  "language": "en",
+  "letter_text": "Exemple Télécom\nService à la clientèle\n\nBoulangerie Exemple Ltée\n1199999002\nQuébec (Québec)\n\nOctober 6, 2026\n\nSubject: Information only - change to your invoice layout\n\nDear customer,\n\nStarting with the November invoice, the layout of your bill changes. The account number, the amounts and the due dates are unchanged. The new layout simply groups the services on one page.\n\nThis notice is for information only. No action is required from you, and there is nothing to confirm.\n\nService à la clientèle",
+  "gold": {
+    "issuer": "Exemple Télécom",
+    "letter_type": "information_only",
+    "language": "en",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-INF-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

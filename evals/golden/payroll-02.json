@@ -1,0 +1,22 @@
+{
+  "id": "payroll-02",
+  "family": "payroll",
+  "language": "fr",
+  "letter_text": "Revenu Québec\nDirection des retenues à la source\n\nExemple Nord Construction Inc.\n1199999006\nSept-Îles (Québec)\n\nLe 5 octobre 2026\n\nObjet : Remise non reçue pour la période se terminant le 31 août 2026\n\nMadame, Monsieur,\n\nNous n'avons pas reçu la remise des retenues à la source pour la période se terminant le 31 août 2026.\n\nCompte : 1199999006-01\nRéférence : RQ-2026-4522990\nMontant de la remise : 14 205,00 $ CAD\n\nVeuillez transmettre la remise et l'intérêt applicable dans les sept jours du présent constat.\n\nDirection des retenues à la source",
+  "gold": {
+    "issuer": "Revenu Québec",
+    "letter_type": "payroll_remittance",
+    "language": "fr",
+    "reference_number": "RQ-2026-4522990",
+    "amount_due": 14205.0,
+    "currency": "CAD",
+    "due_date": null,
+    "required_action": "update_payroll",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-PAY-002"],
+  "gold_action_kind": "file",
+  "gold_needs_human": false
+}

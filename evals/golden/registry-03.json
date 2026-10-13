@@ -1,0 +1,22 @@
+{
+  "id": "registry-03",
+  "family": "registry",
+  "language": "en",
+  "letter_text": "Registraire des entreprises du Québec\nDirection des déclarations\n\nExemple Nord Construction Inc.\n1199999006\nSept-Îles (Québec)\n\nOctober 1, 2026\n\nSubject: Annual declaration reminder - second notice\n\nThis is a second reminder. The annual declaration for Exemple Nord Construction Inc. is still outstanding.\n\nCompany number: 1199999006\nReference: RE-2026-119204\nFiling deadline: October 31, 2026\n\nPlease file before the deadline to avoid a late fee and a notice of intent to strike off.\n\nDirection des déclarations",
+  "gold": {
+    "issuer": "Registraire des entreprises du Québec",
+    "letter_type": "registry_declaration_reminder",
+    "language": "en",
+    "reference_number": "RE-2026-119204",
+    "amount_due": null,
+    "currency": null,
+    "due_date": "2026-10-31",
+    "required_action": "file_declaration",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-REG-001", "PB-REG-002"],
+  "gold_action_kind": "file",
+  "gold_needs_human": false
+}

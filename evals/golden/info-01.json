@@ -1,0 +1,22 @@
+{
+  "id": "info-01",
+  "family": "info",
+  "language": "en",
+  "letter_text": "Exemple Assurances\nService à la clientèle\n\nExemple Toiture SENC\n1199999003\nLaval (Québec)\n\nOctober 5, 2026\n\nSubject: Change to the annual fee, effective January 1, 2027\n\nDear client,\n\nThe annual policy fee will change from $95.00 CAD to $110.00 CAD on January 1, 2027. The premium itself is unchanged.\n\nThis letter is for information only. No action is required and no payment is due now.\n\nThe new fee will appear on your January invoice.\n\nService à la clientèle",
+  "gold": {
+    "issuer": "Exemple Assurances",
+    "letter_type": "information_only",
+    "language": "en",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-INF-001", "PB-INF-005"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

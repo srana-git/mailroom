@@ -1,0 +1,22 @@
+{
+  "id": "info-02",
+  "family": "info",
+  "language": "fr",
+  "letter_text": "Exemple Télécom\nService à la clientèle\n\nExemple Conseil Inc.\n1199999005\nGatineau (Québec)\n\nLe 3 octobre 2026\n\nObjet : Fermeture du comptoir pendant les fêtes\n\nMadame, Monsieur,\n\nNotre comptoir de service sera fermé du 24 décembre 2026 au 2 janvier 2027 inclusivement. Le service technique demeure joignable pendant cette période.\n\nAucune action n'est requise de votre part. Votre facturation se poursuit normalement.\n\nService à la clientèle",
+  "gold": {
+    "issuer": "Exemple Télécom",
+    "letter_type": "information_only",
+    "language": "fr",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-INF-004"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

@@ -1,0 +1,22 @@
+{
+  "id": "ocr-05",
+  "family": "ocr",
+  "language": "en",
+  "letter_text": "Hydro-Quebec\nFacturation commerciale\n\nExemple Toiture SENC\n1199999003\nLaval (Quebec)\n\nOctober 5, 2026\n\nSubject: Commercial electricity invoice - payment due\n\nThe amount of $876.55 CAD is due on your account.\n\nAccount: 1199999003-LAV\nInvoice: HQ-2026-8860120\nDue date: November 1, 2026\n\nThe consumption for this period is ~~ higher than the same period last year. lf you believe the reading is wrong, ask for a meter check before the due date.\n\nPage 2 of 2\n\nFacturation commerciale",
+  "gold": {
+    "issuer": "Hydro-Quebec",
+    "letter_type": "payment_demand",
+    "language": "en",
+    "reference_number": "HQ-2026-8860120",
+    "amount_due": 876.55,
+    "currency": "CAD",
+    "due_date": "2026-11-01",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-UTL-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

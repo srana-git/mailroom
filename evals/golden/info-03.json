@@ -1,0 +1,22 @@
+{
+  "id": "info-03",
+  "family": "info",
+  "language": "en",
+  "letter_text": "Revenu Québec\nDirection du soutien aux entreprises\n\nExemple Média Inc.\n1199999004\nMontréal (Québec)\n\nOctober 2, 2026\n\nSubject: Acknowledgement of your information return\n\nWe acknowledge receipt of your information return for the period ended June 30, 2026. The return has been recorded and no balance is owing.\n\nAccount: 1199999004-01\nReference: RQ-2026-4450031\n\nThis letter is for information only. No action is required. Please keep it with your records.\n\nDirection du soutien aux entreprises",
+  "gold": {
+    "issuer": "Revenu Québec",
+    "letter_type": "information_only",
+    "language": "en",
+    "reference_number": "RQ-2026-4450031",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-INF-003"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

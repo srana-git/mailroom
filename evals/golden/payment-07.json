@@ -1,0 +1,22 @@
+{
+  "id": "payment-07",
+  "family": "payment",
+  "language": "en",
+  "letter_text": "Exemple Télécom\nFacturation entreprises\n\nExemple Toiture SENC\n1199999003\nLaval (Québec)\n\nOctober 5, 2026\n\nSubject: Business invoice - November services\n\nDear customer,\n\nYour invoice for November services is now available. The amount is $219.40 CAD.\n\nAccount: 1199999822\nInvoice: TEL-2026-33107\nDue date: November 5, 2026\n\nPayment is accepted by preauthorised debit or by transfer to the account on file. No change has been made to our banking details.\n\nFacturation entreprises",
+  "gold": {
+    "issuer": "Exemple Télécom",
+    "letter_type": "payment_demand",
+    "language": "en",
+    "reference_number": "TEL-2026-33107",
+    "amount_due": 219.4,
+    "currency": "CAD",
+    "due_date": "2026-11-05",
+    "required_action": "pay",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-SUP-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

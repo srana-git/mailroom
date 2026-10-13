@@ -1,0 +1,22 @@
+{
+  "id": "registry-01",
+  "family": "registry",
+  "language": "en",
+  "letter_text": "Registraire des entreprises du Québec\nDirection des déclarations\n\nExemple Logistique Inc.\n1199999001\nMontréal (Québec)\n\nSeptember 30, 2026\n\nSubject: Annual declaration reminder\n\nThe annual declaration for Exemple Logistique Inc. has not been filed for the current year.\n\nCompany number: 1199999001\nReference: RE-2026-118820\nFiling deadline: October 30, 2026\n\nThe declaration confirms your address, your directors and your share structure. A company that does not file may be struck off the register.\n\nDirection des déclarations",
+  "gold": {
+    "issuer": "Registraire des entreprises du Québec",
+    "letter_type": "registry_declaration_reminder",
+    "language": "en",
+    "reference_number": "RE-2026-118820",
+    "amount_due": null,
+    "currency": null,
+    "due_date": "2026-10-30",
+    "required_action": "file_declaration",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-REG-001"],
+  "gold_action_kind": "file",
+  "gold_needs_human": false
+}

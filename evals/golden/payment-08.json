@@ -1,0 +1,22 @@
+{
+  "id": "payment-08",
+  "family": "payment",
+  "language": "fr",
+  "letter_text": "CNESST\nDirection des cotisations\n\nExemple Nord Construction Inc.\n1199999006\nSept-Îles (Québec)\n\nLe 8 octobre 2026\n\nObjet : Avis de cotisation annuelle - prime d'assurance\n\nMadame, Monsieur,\n\nLa prime annuelle pour l'année 2026 est établie à 3 755,00 $ CAD, calculée sur la masse salariale déclarée.\n\nCompte : 1199999006-CNESST\nRéférence : CN-2026-20441\nDate limite : 30 novembre 2026\n\nSi la masse salariale déclarée est inexacte, une demande d'ajustement doit être produite avant la date limite.\n\nDirection des cotisations",
+  "gold": {
+    "issuer": "CNESST",
+    "letter_type": "payment_demand",
+    "language": "fr",
+    "reference_number": "CN-2026-20441",
+    "amount_due": 3755.0,
+    "currency": "CAD",
+    "due_date": "2026-11-30",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-PAY-004"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

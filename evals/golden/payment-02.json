@@ -1,0 +1,22 @@
+{
+  "id": "payment-02",
+  "family": "payment",
+  "language": "fr",
+  "letter_text": "Ville de Laval\nService de la taxation\n\nExemple Toiture SENC\n1199999003\nLaval (Québec)\n\nLe 6 octobre 2026\n\nObjet : Compte de taxes - troisième versement\n\nMadame, Monsieur,\n\nLe troisième versement de taxes foncières est dû. Le montant est de 2 187,00 $ CAD.\n\nCompte : 1199999003-LAV\nRéférence : LAV-2026-77321\nDate limite : 2 novembre 2026\n\nUne pénalité de 5 pour cent s'ajoute au solde impayé après la date limite.\n\nService de la taxation",
+  "gold": {
+    "issuer": "Ville de Laval",
+    "letter_type": "payment_demand",
+    "language": "fr",
+    "reference_number": "LAV-2026-77321",
+    "amount_due": 2187.0,
+    "currency": "CAD",
+    "due_date": "2026-11-02",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-MUN-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

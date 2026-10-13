@@ -1,0 +1,22 @@
+{
+  "id": "payment-05",
+  "family": "payment",
+  "language": "en",
+  "letter_text": "Papeterie Exemple\nService des comptes clients\n\nExemple Conseil Inc.\n1199999005\nGatineau (Québec)\n\nOctober 4, 2026\n\nSubject: Invoice 2026-11882 - payment due\n\nDear customer,\n\nInvoice 2026-11882 for office supplies delivered on September 22 is now due. The amount is $428.75 CAD.\n\nAccount: 1199999811\nInvoice: 2026-11882\nDue date: October 29, 2026\n\nOur banking details are unchanged. If you receive a message telling you otherwise, please call us before paying.\n\nService des comptes clients",
+  "gold": {
+    "issuer": "Papeterie Exemple",
+    "letter_type": "payment_demand",
+    "language": "en",
+    "reference_number": "2026-11882",
+    "amount_due": 428.75,
+    "currency": "CAD",
+    "due_date": "2026-10-29",
+    "required_action": "pay",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-SUP-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

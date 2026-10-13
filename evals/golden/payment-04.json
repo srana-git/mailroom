@@ -1,0 +1,22 @@
+{
+  "id": "payment-04",
+  "family": "payment",
+  "language": "fr",
+  "letter_text": "Agence du revenu du Canada\nDirection des retenues sur la paie\n\nExemple Logistique Inc.\n1199999001\nMontréal (Québec)\n\nLe 7 octobre 2026\n\nObjet : Solde à payer - retenues sur la paie\n\nMadame, Monsieur,\n\nUn solde impayé demeure sur votre compte de retenues à la source. Le montant est de 5 980,40 $ CAD.\n\nCompte : 1199999001-RP0001\nRéférence : ARC-2026-59120\nDate limite : 16 novembre 2026\n\nLe défaut de payer entraîne des intérêts et peut mener à une mise en demeure.\n\nDirection des retenues sur la paie",
+  "gold": {
+    "issuer": "Agence du revenu du Canada",
+    "letter_type": "payment_demand",
+    "language": "fr",
+    "reference_number": "ARC-2026-59120",
+    "amount_due": 5980.4,
+    "currency": "CAD",
+    "due_date": "2026-11-16",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-TAX-002", "PB-PAY-003"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

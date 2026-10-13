@@ -1,0 +1,22 @@
+{
+  "id": "routine-08",
+  "family": "routine",
+  "language": "fr",
+  "letter_text": "Revenu Québec\nDirection du soutien aux entreprises\n\nBoulangerie Exemple Ltée\n1199999002\nQuébec (Québec)\n\nLe 8 octobre 2026\n\nObjet : Relevé de votre compte en règle\n\nMadame, Monsieur,\n\nNous vous transmettons le relevé trimestriel de votre compte. Le solde est nul et aucun intérêt n'a été calculé pour la période.\n\nVotre fréquence de remise demeure mensuelle. Cette fréquence a été confirmée lors de la révision de votre dossier au printemps.\n\nAucune action n'est requise de votre part.\n\nDirection du soutien aux entreprises",
+  "gold": {
+    "issuer": "Revenu Québec",
+    "letter_type": "routine_notice",
+    "language": "fr",
+    "reference_number": null,
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

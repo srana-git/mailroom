@@ -1,0 +1,22 @@
+{
+  "id": "registry-04",
+  "family": "registry",
+  "language": "fr",
+  "letter_text": "Registraire des entreprises du Québec\nDirection des déclarations\n\nExemple Toiture SENC\n1199999003\nLaval (Québec)\n\nLe 2 octobre 2026\n\nObjet : Rappel de déclaration annuelle\n\nMadame, Monsieur,\n\nLa déclaration annuelle de Exemple Toiture SENC n'a pas été reçue pour l'année en cours.\n\nNuméro d'entreprise : 1199999003\nRéférence : RE-2026-119337\nDate limite de dépôt : 1er novembre 2026\n\nLe dépôt se fait par le formulaire de mise à jour, signé par un administrateur.\n\nDirection des déclarations",
+  "gold": {
+    "issuer": "Registraire des entreprises du Québec",
+    "letter_type": "registry_declaration_reminder",
+    "language": "fr",
+    "reference_number": "RE-2026-119337",
+    "amount_due": null,
+    "currency": null,
+    "due_date": "2026-11-01",
+    "required_action": "file_declaration",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-REG-001"],
+  "gold_action_kind": "file",
+  "gold_needs_human": false
+}

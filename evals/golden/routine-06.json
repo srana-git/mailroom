@@ -1,0 +1,22 @@
+{
+  "id": "routine-06",
+  "family": "routine",
+  "language": "fr",
+  "letter_text": "Hydro-Québec\nCentre de services à la clientèle\n\nExemple Média Inc.\nCompte 1199999004-HQ\n\nLe 1er octobre 2026\n\nObjet : Avis annuel sur la qualité de l'électricité\n\nMadame, Monsieur,\n\nNous vous transmettons l'avis annuel sur la qualité du service pour votre secteur. Aucune interruption majeure n'a été enregistrée pour votre compte au cours de la dernière année.\n\nLe tarif applicable à votre compte demeure inchangé.\n\nAucune action n'est requise. Conservez ce document pour vos dossiers.\n\nCentre de services à la clientèle",
+  "gold": {
+    "issuer": "Hydro-Québec",
+    "letter_type": "routine_notice",
+    "language": "fr",
+    "reference_number": "1199999004-HQ",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

@@ -1,0 +1,22 @@
+{
+  "id": "payment-01",
+  "family": "payment",
+  "language": "en",
+  "letter_text": "Revenu Québec\nDirection principale des taxes\n\nExemple Logistique Inc.\n1199999001\nMontréal (Québec)\n\nOctober 9, 2026\n\nSubject: Notice of assessment - balance owing\n\nDear client,\n\nFollowing our review of your return, a balance of $3,412.55 CAD is owing on your account.\n\nAccount: 1199999001-01\nReference: RQ-2026-4471199\nDue date: November 14, 2026\n\nInterest is added from the day after the due date. If payment is made by that date, no interest applies.\n\nDirection principale des taxes",
+  "gold": {
+    "issuer": "Revenu Québec",
+    "letter_type": "payment_demand",
+    "language": "en",
+    "reference_number": "RQ-2026-4471199",
+    "amount_due": 3412.55,
+    "currency": "CAD",
+    "due_date": "2026-11-14",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-TAX-002"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}

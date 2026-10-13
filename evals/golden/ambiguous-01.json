@@ -1,0 +1,22 @@
+{
+  "id": "ambiguous-01",
+  "family": "ambiguous",
+  "language": "en",
+  "letter_text": "Revenu Québec\nDirection du soutien aux entreprises\n\nExemple Conseil Inc.\n1199999005\nGatineau (Québec)\n\nOctober 8, 2026\n\nSubject: Review of your file\n\nDear client,\n\nFollowing our review, no action is required on your part and your file remains unchanged.\n\nA balance of $1,204.00 CAD is nevertheless shown on your account and should be settled.\n\nReference: RQ-2026-4510777\n\nIf you have questions, contact the agent named on your file.\n\nDirection du soutien aux entreprises",
+  "gold": {
+    "issuer": "Revenu Québec",
+    "letter_type": "information_only",
+    "language": "en",
+    "reference_number": "RQ-2026-4510777",
+    "amount_due": 1204.0,
+    "currency": "CAD",
+    "due_date": null,
+    "required_action": "escalate",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-003"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

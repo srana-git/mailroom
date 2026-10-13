@@ -1,0 +1,22 @@
+{
+  "id": "ocr-04",
+  "family": "ocr",
+  "language": "fr",
+  "letter_text": "Registraire des entreprises du Quebec\nDirection des declarations\n\nBoulangerie Exemple Ltee\n1199999002\nQuebec (Quebec)\n\nLe 7 octobre 2026\n\nObjet : Rappel de declaration annuelle\n\nMadame, Monsieur,\n\nLa declaration annuelle n'a pas ete deposee pour l'annee en cours.\n\nNumero d'entreprise : 1199999002\nReference : RE-2026-119880\nDate limite de depot : 8 novembre 2026\n\nUn defaut de depot peut mener a ~~ la radiation d'office.\n\nPage 1 de 1\n\nDirection des declarations",
+  "gold": {
+    "issuer": "Registraire des entreprises du Quebec",
+    "letter_type": "registry_declaration_reminder",
+    "language": "fr",
+    "reference_number": "RE-2026-119880",
+    "amount_due": null,
+    "currency": null,
+    "due_date": "2026-11-08",
+    "required_action": "file_declaration",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-REG-001"],
+  "gold_action_kind": "file",
+  "gold_needs_human": false
+}

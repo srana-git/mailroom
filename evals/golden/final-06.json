@@ -1,0 +1,22 @@
+{
+  "id": "final-06",
+  "family": "final",
+  "language": "fr",
+  "letter_text": "Revenu Québec\nDirection principale des taxes\n\nBoulangerie Exemple Ltée\n1199999002\nQuébec (Québec)\n\nLe 6 octobre 2026\n\nDERNIER AVIS\n\nObjet : Dernier avis avant délivrance d'un certificat\n\nMadame, Monsieur,\n\nLa cotisation émise le 12 septembre 2026 n'a pas été acquittée. Le solde est de 1 640,00 $ CAD.\n\nCompte : 1199999002-01\nRéférence : RQ-2026-4500117\nDate limite : 20 octobre 2026\n\nNous contestons cette cotisation. Les ventes visées ont déjà été déclarées dans la période précédente, comme le montre notre déclaration du 30 juin. Vous pouvez payer le solde ou produire un avis d'opposition avant la date limite.\n\nDirection principale des taxes",
+  "gold": {
+    "issuer": "Revenu Québec",
+    "letter_type": "final_notice",
+    "language": "fr",
+    "reference_number": "RQ-2026-4500117",
+    "amount_due": 1640.0,
+    "currency": "CAD",
+    "due_date": "2026-10-20",
+    "required_action": "contest",
+    "urgency": 5,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-TAX-001", "PB-TAX-004"],
+  "gold_action_kind": "contest",
+  "gold_needs_human": false
+}

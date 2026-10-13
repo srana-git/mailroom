@@ -1,0 +1,22 @@
+{
+  "id": "ambiguous-04",
+  "family": "ambiguous",
+  "language": "fr",
+  "letter_text": "Ville de Montréal\nService des finances\n\nExemple Média Inc.\n1199999004\nMontréal (Québec)\n\nLe 8 octobre 2026\n\nObjet : Dossier de taxation - avis contradictoire\n\nMadame, Monsieur,\n\nNous confirmons que votre dossier de taxation est clos et qu'aucun solde n'est dû.\n\nLe présent courrier remplace l'avis précédent. Un solde de 780,00 $ CAD demeure toutefois exigible et devait être acquitté avant le 15 septembre 2026.\n\nCompte : 1199999004-MTL\n\nService des finances",
+  "gold": {
+    "issuer": "Ville de Montréal",
+    "letter_type": "routine_notice",
+    "language": "fr",
+    "reference_number": "1199999004-MTL",
+    "amount_due": 780.0,
+    "currency": "CAD",
+    "due_date": "2026-09-15",
+    "required_action": "escalate",
+    "urgency": 3,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-003"],
+  "gold_action_kind": "escalate",
+  "gold_needs_human": true
+}

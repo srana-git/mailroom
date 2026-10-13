@@ -1,0 +1,22 @@
+{
+  "id": "routine-03",
+  "family": "routine",
+  "language": "en",
+  "letter_text": "Registraire des entreprises du Québec\n\nBoulangerie Exemple Ltée\n1199999002\nQuébec (Québec)\n\nSeptember 28, 2026\n\nSubject: Confirmation of your annual registration renewal\n\nDear client,\n\nWe confirm that the registration of Boulangerie Exemple Ltée was renewed for the current year. Your company remains in good standing.\n\nYour next annual declaration will be due in the same period next year. No fee is owing at this time.\n\nNo action is required.\n\nThe Registrar",
+  "gold": {
+    "issuer": "Registraire des entreprises du Québec",
+    "letter_type": "routine_notice",
+    "language": "en",
+    "reference_number": "1199999002",
+    "amount_due": null,
+    "currency": null,
+    "due_date": null,
+    "required_action": "no_action",
+    "urgency": 1,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-GEN-001"],
+  "gold_action_kind": "no_action",
+  "gold_needs_human": false
+}

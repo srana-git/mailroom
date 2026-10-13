@@ -1,0 +1,22 @@
+{
+  "id": "payment-03",
+  "family": "payment",
+  "language": "en",
+  "letter_text": "Hydro-Québec\nFacturation commerciale\n\nExemple Média Inc.\n1199999004\nMontréal (Québec)\n\nOctober 3, 2026\n\nSubject: Commercial electricity invoice - payment due\n\nDear customer,\n\nThe amount of $1,246.89 CAD is due on your account.\n\nAccount: 1199999004-HQ\nInvoice: HQ-2026-8841203\nDue date: October 30, 2026\n\nThe consumption for the period is higher than the same period last year. If you believe the reading is wrong, ask for a meter check before the due date.\n\nFacturation commerciale",
+  "gold": {
+    "issuer": "Hydro-Québec",
+    "letter_type": "payment_demand",
+    "language": "en",
+    "reference_number": "HQ-2026-8841203",
+    "amount_due": 1246.89,
+    "currency": "CAD",
+    "due_date": "2026-10-30",
+    "required_action": "pay",
+    "urgency": 4,
+    "is_suspicious": false,
+    "suspicion_reason": null
+  },
+  "gold_playbooks": ["PB-UTL-001"],
+  "gold_action_kind": "pay",
+  "gold_needs_human": false
+}
