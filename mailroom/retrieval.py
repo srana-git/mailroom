@@ -7,8 +7,11 @@ control for "does rerank earn its latency".
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
+from .chunking import load_playbook_chunks
 from .config import Settings
 from .indexer import PlaybookIndex
 from .models import RetrievalHit
@@ -111,4 +114,35 @@ def dedupe_by_playbook(hits: list[RetrievalHit], limit: int | None = None) -> li
     return unique[:limit] if limit else unique
 
 
-__all__ = ["Retriever", "dedupe_by_playbook"]
+def forced_hits(playbook_dir: Path, playbook_ids: Sequence[str]) -> list[RetrievalHit]:
+    """Hits for named procedures, built from the corpus instead of from a query.
+
+    When the deterministic scans fire, the matching security procedure has to be
+    in the retrieved set. Asking an embedding query to re-derive a fact the guard
+    already knows is how PB-SEC-002 went missing on three injection letters while
+    the injection scanner had fired on all three. The hits are returned in the
+    requested order, so the specific procedures come before the general one.
+    """
+    wanted = list(playbook_ids)
+    if not wanted:
+        return []
+    order = {playbook_id: index for index, playbook_id in enumerate(wanted)}
+    hits = [
+        RetrievalHit(
+            playbook_id=chunk.playbook_id,
+            title=chunk.title,
+            chunk_id=chunk.chunk_id,
+            text=chunk.text,
+            owner=chunk.owner,
+            deadline_rule=chunk.deadline_rule,
+            score=1.0,
+            stage="forced",
+        )
+        for chunk in load_playbook_chunks(Path(playbook_dir))
+        if chunk.playbook_id in order
+    ]
+    hits.sort(key=lambda hit: order[hit.playbook_id])
+    return hits
+
+
+__all__ = ["Retriever", "dedupe_by_playbook", "forced_hits"]

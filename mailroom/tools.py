@@ -64,7 +64,10 @@ EXTRACT_FIELDS_SCHEMA: dict[str, Any] = {
                 "language": {
                     "type": "string",
                     "enum": ["fr", "en"],
-                    "description": "Language the letter is written in.",
+                    "description": (
+                        "Language the body sentences are written in. Not the language of "
+                        "the letterhead or the signature block."
+                    ),
                 },
                 "reference_number": dict(
                     _NULLABLE_STRING,
@@ -80,14 +83,23 @@ EXTRACT_FIELDS_SCHEMA: dict[str, Any] = {
                 ),
                 "due_date": dict(
                     _NULLABLE_STRING,
-                    description="Deadline in ISO 8601 form, YYYY-MM-DD. Null when none is stated.",
+                    description=(
+                        "The deadline the letter states, as a calendar date in ISO 8601 "
+                        "form, YYYY-MM-DD. When the letter gives only a relative delay "
+                        "('within 30 days') and prints its own date, count the delay from "
+                        "that date. Null when there is no date to count from. The date the "
+                        "letter was written on is not a due date."
+                    ),
                 ),
                 "required_action": {
                     "type": "string",
                     "enum": [item.value for item in RequiredAction],
                     "description": (
-                        "What the letter asks for. Use 'escalate' when the letter does not "
-                        "settle what must be done."
+                        "What the letter asks for: no_action (asks for nothing), pay, "
+                        "file_declaration, provide_documents, confirm_address, "
+                        "update_payroll (payroll remittances, a Record of Employment, a "
+                        "withholding account), report_phishing, or escalate when none of "
+                        "these settles what must be done."
                     ),
                 },
                 "urgency": {
@@ -135,7 +147,11 @@ SEARCH_PLAYBOOK_SCHEMA: dict[str, Any] = {
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": "What to search for, in a few words.",
+                    "description": (
+                        "What to search for: build it from the issuer, the letter type and "
+                        "the key phrases of the request. A few words. Do not paste the "
+                        "letter in."
+                    ),
                 },
                 "top_k": {
                     "type": "integer",

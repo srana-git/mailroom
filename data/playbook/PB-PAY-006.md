@@ -12,6 +12,10 @@ tags: [payroll, record_of_employment, correction]
 An employee, an agency or an insurer asks us to correct a record of employment, usually
 because the insurable hours or the reason for separation is wrong.
 
+A record of employment is a *relevé d'emploi*, and the correction is a *relevé modifié*. A
+letter that names the insurable hours is this procedure, whether it calls the document a
+Record of Employment, an ROE or a relevé d'emploi.
+
 ## Steps
 
 1. Identify the record by the employee and the pay period, without moving the record

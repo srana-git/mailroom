@@ -129,7 +129,7 @@ class RetrievalHit(BaseModel):
     owner: str = ""
     deadline_rule: str = ""
     score: float
-    stage: Literal["vector", "rerank"]
+    stage: Literal["vector", "rerank", "forced"]
 
 
 class GuardVerdict(BaseModel):

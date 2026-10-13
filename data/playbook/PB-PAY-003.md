@@ -13,6 +13,10 @@ The agency reviews the payroll withholding account and asks us to confirm the nu
 employees, the remittance frequency, or the account status. It reads like a
 questionnaire rather than a demand.
 
+In French this is a *révision du compte de retenues*, or a *demande de renseignements sur
+le compte de retenues à la source*. It asks questions about the payroll account and does
+not ask for money, so it is this procedure and not a payment procedure.
+
 ## Steps
 
 1. Read every question and answer only what is asked.
