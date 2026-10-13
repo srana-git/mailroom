@@ -7,7 +7,7 @@
     "issuer": "Exemple Télécom",
     "letter_type": "information_only",
     "language": "en",
-    "reference_number": null,
+    "reference_number": "1199999002",
     "amount_due": null,
     "currency": null,
     "due_date": null,

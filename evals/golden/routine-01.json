@@ -7,7 +7,7 @@
     "issuer": "Revenu Québec",
     "letter_type": "routine_notice",
     "language": "en",
-    "reference_number": null,
+    "reference_number": "1199999001",
     "amount_due": null,
     "currency": null,
     "due_date": null,

@@ -7,7 +7,7 @@
     "issuer": "Exemple Assurances",
     "letter_type": "routine_notice",
     "language": "en",
-    "reference_number": null,
+    "reference_number": "1199999003",
     "amount_due": null,
     "currency": null,
     "due_date": null,
