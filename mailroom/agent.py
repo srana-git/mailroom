@@ -458,19 +458,26 @@ def _absorb(state: _RunState, tool: str, outcome: ToolOutcome) -> None:
 
 
 def _assistant_message(response: LLMResponse) -> dict[str, Any]:
-    return {
-        "role": "assistant",
-        "content": response.text or "",
-        "tool_plan": response.tool_plan,
-        "tool_calls": [
+    """Echo a model turn back in v2 shape.
+
+    The API rejects a `tool_plan` on a turn without tool calls (400, "tool plan
+    cannot be used with this model"), so the plan and the calls travel together.
+    """
+    message: dict[str, Any] = {"role": "assistant"}
+    if response.tool_calls:
+        message["tool_calls"] = [
             {
                 "id": call.id,
                 "type": "function",
                 "function": {"name": call.name, "arguments": call.arguments_raw},
             }
             for call in response.tool_calls
-        ],
-    }
+        ]
+        if response.tool_plan:
+            message["tool_plan"] = response.tool_plan
+    else:
+        message["content"] = response.text or ""
+    return message
 
 
 def _parse_plan(text: str | None) -> Plan:

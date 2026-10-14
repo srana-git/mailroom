@@ -155,6 +155,29 @@ def model_time_ms(events: list[dict[str, Any]]) -> dict[str, int]:
     return {"model_latency_ms": model_ms, "retrieval_latency_ms": retrieval_ms}
 
 
+def failed_model_calls(events: list[dict[str, Any]]) -> int:
+    """Count the model calls that failed for good, not the failed attempts.
+
+    One call runs its attempts in place, so its attempts are logged as a run of
+    `model_call` events with rising attempt numbers: 1, 2, 3. A new call starts
+    again at attempt 1. An error event is therefore the last word on a call when
+    the next `model_call` event starts a new call (attempt 1), or when no later
+    `model_call` event exists; an error followed by a higher attempt is a retry
+    that may still succeed. The count matters because a backend that gives up
+    leaves the letter looking like a normal `needs_human` result, so the run
+    status alone cannot show it.
+    """
+    calls = [event for event in events if event.get("kind") == "model_call"]
+    failures = 0
+    for index, event in enumerate(calls):
+        if event.get("status") != "error":
+            continue
+        following = calls[index + 1] if index + 1 < len(calls) else None
+        if following is None or int(following.get("attempt") or 0) == 1:
+            failures += 1
+    return failures
+
+
 def summarize_run(events: list[dict[str, Any]]) -> dict[str, Any]:
     """Fold a run's events into the numbers a reader wants first."""
     models = [e for e in events if e.get("kind") == "model_call"]
@@ -183,6 +206,7 @@ __all__ = [
     "MODEL_OPERATIONS",
     "RETRIEVAL_OPERATIONS",
     "AuditLog",
+    "failed_model_calls",
     "input_hash",
     "model_time_ms",
     "new_run_id",

@@ -441,3 +441,16 @@ def test_aggregate_returns_every_block():
         "letters",
     }
     assert block["letters"] == 1
+
+
+def test_aggregate_counts_the_letters_whose_model_calls_failed_for_good():
+    records = [
+        _record(backend_failures=2),
+        _record(backend_failures=0),
+        _record(backend_failures=1),
+    ]
+    assert metrics.aggregate(records)["backend_failed_letters"] == 2
+
+
+def test_a_record_without_a_backend_failures_key_counts_as_zero():
+    assert metrics.aggregate([_record()])["backend_failed_letters"] == 0

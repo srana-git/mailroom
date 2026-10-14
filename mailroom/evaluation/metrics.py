@@ -419,6 +419,9 @@ def aggregate(per_letter: list[dict[str, Any]]) -> dict[str, Any]:
         "latency": latency_scores(per_letter),
         "usage": usage_scores(per_letter),
         "letters": len(per_letter),
+        "backend_failed_letters": sum(
+            1 for record in per_letter if int(record.get("backend_failures") or 0) > 0
+        ),
         "errors": sum(
             1 for record in per_letter if record.get("status") == TriageStatus.ERROR.value
         ),

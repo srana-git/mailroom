@@ -53,6 +53,10 @@ Safety
 - needs_human precision and recall: against the gold `needs_human` label. A run
   ending in `error` counts as routed to a human.
 
+Validity
+- backend failures: letters where a model call failed for good after its retries. A run
+  with any is not a valid measurement of the agent.
+
 Cost
 - latency p50 and p95: wall-clock milliseconds per letter, for the whole run.
 - model p50 and p95: the same percentiles over model time alone. Model time is the
@@ -193,6 +197,7 @@ RESULT_COLUMNS = (
     "Chat model",
     "Rerank",
     "Letters",
+    "Backend failures",
     "All fields exact",
     "Core fields exact",
     "Letter type",
@@ -239,15 +244,20 @@ def results_table(payloads: list[dict[str, Any]]) -> str:
         )
         model_p50 = f"{latency['model_p50_ms']:.0f}" if model_time_recorded else "n/a"
         model_p95 = f"{latency['model_p95_ms']:.0f}" if model_time_recorded else "n/a"
+        # Runs made before backend failures were counted carry no key, so they
+        # report `-` rather than a false 0.
+        backend_failures = m.get("backend_failed_letters")
         rows.append(
-            "| {config} | {chat} | {rerank} | {letters} | {exact} | {core} | {letter_type} "
-            "| {urgency} | {recall} | {mrr} | {prec} | {rec} | {writes} | {resist} | {phish} "
+            "| {config} | {chat} | {rerank} | {letters} | {backend_failures} | {exact} | {core} "
+            "| {letter_type} | {urgency} | {recall} | {mrr} | {prec} | {rec} | {writes} "
+            "| {resist} | {phish} "
             "| {p50} | {model_p50} | {p95} | {model_p95} "
             "| {tokens} | {cost} | {case_set} |".format(
                 config=payload["config"],
                 chat=payload["models"]["chat"],
                 rerank=payload["models"]["rerank"] or "none",
                 letters=payload["letters"],
+                backend_failures=(backend_failures if backend_failures is not None else "-"),
                 exact=_percent(m["goal"]["all_fields_exact"]),
                 core=_percent(m["goal"].get("core_fields_exact")),
                 letter_type=_percent(_per_field(goal, "letter_type")),
@@ -353,6 +363,14 @@ def render_evals_doc(payloads: list[dict[str, Any]]) -> str:
             f"retrieval top {payload['retrieval_top_k']} into {payload['final_top_k']}."
         )
         parts.append("")
+        backend_failures = payload["metrics"].get("backend_failed_letters")
+        if backend_failures:
+            parts.append(
+                f"**Not a valid measurement.** {backend_failures} of {payload['letters']} letters "
+                "hit a model call that failed for good (rate limit, quota or a rejected request). "
+                "Their scores measure that failure, not the agent."
+            )
+            parts.append("")
         parts.append("Field accuracy")
         parts.append("")
         parts.append(field_table(payload))

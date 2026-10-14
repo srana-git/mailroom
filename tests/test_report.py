@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
-from mailroom.config import EVAL_CONFIGS, Settings
+from mailroom.config import EVAL_CONFIGS, REPO_ROOT, Settings
 from mailroom.evaluation import report
 from mailroom.evaluation.harness import (
     EvalHarness,
@@ -16,6 +17,7 @@ from mailroom.evaluation.harness import (
     write_results,
 )
 from mailroom.fake import FakeBackend
+from mailroom.llm import BackendError
 
 
 def _payload(config: str = "A", letters: int = 2) -> dict:
@@ -186,6 +188,46 @@ def test_the_results_table_reports_the_core_fields_rate():
     assert "| 0.0% |" in table
 
 
+def test_the_results_table_has_a_backend_failures_column_after_letters():
+    header = report.results_table([_payload()]).splitlines()[0]
+    columns = [cell.strip() for cell in header.strip("|").split("|")]
+    assert columns[columns.index("Letters") + 1] == "Backend failures"
+
+
+def test_the_results_table_shows_the_backend_failure_count():
+    payload = _payload(letters=3)
+    payload["metrics"]["backend_failed_letters"] = 2
+    row = report.results_table([payload]).splitlines()[2]
+    cells = [cell.strip() for cell in row.strip("|").split("|")]
+    assert cells[report.RESULT_COLUMNS.index("Backend failures")] == "2"
+
+
+def test_the_results_table_reads_backend_failures_as_a_dash_when_the_run_predates_it():
+    payload = _payload()
+    del payload["metrics"]["backend_failed_letters"]
+    row = report.results_table([payload]).splitlines()[2]
+    cells = [cell.strip() for cell in row.strip("|").split("|")]
+    assert cells[report.RESULT_COLUMNS.index("Backend failures")] == "-"
+
+
+def test_a_run_with_backend_failures_is_marked_not_a_valid_measurement():
+    payload = _payload()
+    payload["metrics"]["backend_failed_letters"] = 1
+    text = report.render_evals_doc([payload])
+    assert "**Not a valid measurement.** 1 of 2 letters" in text
+    assert "measure that failure, not the agent" in text
+
+
+def test_a_clean_run_carries_no_validity_warning():
+    assert "Not a valid measurement" not in report.render_evals_doc([_payload()])
+
+
+def test_the_doc_lists_backend_failures_under_what_is_measured():
+    text = report.render_evals_doc([_payload()])
+    assert "Validity" in text
+    assert "letters where a model call failed for good after its retries" in text
+
+
 def test_the_doc_explains_the_issuer_and_core_field_rules():
     text = report.render_evals_doc([_payload()])
     assert "## Scoring rules" in text
@@ -274,6 +316,74 @@ class _LiveBackend:
     """A backend the harness accepts, used to inspect configuration only."""
 
     name = "cohere"
+
+
+class _DownBackend:
+    """A backend the harness accepts whose every chat call fails for good.
+
+    It records the failed attempts itself, the way `CohereBackend._with_retries`
+    does, so the audit trail shows a call that gave up after its retries.
+    """
+
+    name = "cohere"
+    max_attempts = 4
+
+    def __init__(self, audit=None) -> None:
+        self.audit = audit
+
+    def with_audit(self, audit):
+        return _DownBackend(audit)
+
+    def chat(self, *, model, messages, tools=None, response_format=None, temperature=0.0):
+        if self.audit is not None:
+            for attempt in range(1, self.max_attempts + 1):
+                self.audit.model_call(
+                    model=model,
+                    attempt=attempt,
+                    latency_ms=1,
+                    status="error",
+                    error="TooManyRequestsError: 429",
+                )
+        raise BackendError(
+            f"chat failed after {self.max_attempts} attempt(s) on {model}: 429",
+            attempts=self.max_attempts,
+        )
+
+
+def _down_backend_settings(tmp_path: Path) -> Settings:
+    """Settings over three tiny cases, with index metadata so nothing is embedded."""
+    golden = tmp_path / "golden"
+    golden.mkdir()
+    for number in range(3):
+        (golden / f"case-{number}.json").write_text(
+            json.dumps(
+                {"id": f"case-{number}", "family": "routine", "letter_text": "Pay this invoice."}
+            ),
+            encoding="utf-8",
+        )
+    settings = Settings.build(
+        root=REPO_ROOT,
+        backend="cohere",
+        state_dir=tmp_path / "state",
+        index_dir=tmp_path / "state" / "index",
+        queue_path=tmp_path / "state" / "queue.jsonl",
+        golden_dir=golden,
+        results_dir=tmp_path / "results",
+    )
+    settings.index_dir.mkdir(parents=True, exist_ok=True)
+    (settings.index_dir / "meta.json").write_text(
+        json.dumps({"embed_model": settings.embed_model}), encoding="utf-8"
+    )
+    return settings
+
+
+def test_the_harness_stops_when_three_letters_in_a_row_lose_their_model_call(tmp_path: Path):
+    settings = _down_backend_settings(tmp_path)
+    backend = _DownBackend()
+    harness = EvalHarness(settings=settings, backend=backend, config=EVAL_CONFIGS["A"])
+    with pytest.raises(RuntimeError, match="in a row"):
+        harness.run()
+    assert not list(settings.results_dir.glob("*.json"))
 
 
 def test_the_golden_loader_reads_gold_playbooks_and_targets(repo_root: Path):

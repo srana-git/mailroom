@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from ..agent import Triager
-from ..audit import model_time_ms, read_run
+from ..audit import failed_model_calls, model_time_ms, read_run
 from ..config import (
     DEFAULT_EVAL_SET,
     EVAL_CONFIGS,
@@ -38,6 +38,10 @@ from ..retrieval import Retriever, dedupe_by_playbook
 from . import metrics
 
 RESULTS_HEADER = "# Eval results"
+
+# A run whose backend is down scores every letter as a normal needs_human, so the
+# harness stops once this many letters in a row hit a call that failed for good.
+ABORT_AFTER_BACKEND_FAILURES = 3
 
 
 @dataclass
@@ -170,10 +174,22 @@ class EvalHarness:
                 settings=scratch_settings,
                 model=self.config.chat_model,
             )
-            per_letter = [
-                self._run_case(triager, case, index=number, traces_dir=traces_dir)
-                for number, case in enumerate(cases, start=1)
-            ]
+            per_letter: list[dict[str, Any]] = []
+            consecutive_failures = 0
+            for number, case in enumerate(cases, start=1):
+                record = self._run_case(triager, case, index=number, traces_dir=traces_dir)
+                per_letter.append(record)
+                if int(record.get("backend_failures") or 0) > 0:
+                    consecutive_failures += 1
+                else:
+                    consecutive_failures = 0
+                if consecutive_failures >= ABORT_AFTER_BACKEND_FAILURES:
+                    reason = str(record.get("reason") or "")[:300]
+                    raise RuntimeError(
+                        f"stopping the eval: {ABORT_AFTER_BACKEND_FAILURES} letters in a row "
+                        f"hit a model call that failed for good (last reason: {reason}). "
+                        "The backend is down or out of quota; no results were written."
+                    )
 
         payload = {
             "config": self.config.name,
@@ -235,7 +251,8 @@ class EvalHarness:
         cost = estimate_cost_usd(
             self.config.chat_model, result.input_tokens, result.output_tokens
         )
-        timing = model_time_ms(read_run(case.id, traces_dir))
+        events = read_run(case.id, traces_dir)
+        timing = model_time_ms(events)
         return {
             "id": case.id,
             "family": case.family,
@@ -270,6 +287,7 @@ class EvalHarness:
             "latency_ms": result.latency_ms,
             "model_latency_ms": timing["model_latency_ms"],
             "retrieval_latency_ms": timing["retrieval_latency_ms"],
+            "backend_failures": failed_model_calls(events),
             "input_tokens": result.input_tokens,
             "output_tokens": result.output_tokens,
             "cost_usd": cost,

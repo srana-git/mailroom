@@ -5,12 +5,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from mailroom.agent import Triager
+from mailroom.agent import Triager, _assistant_message
 from mailroom.audit import read_run
 from mailroom.config import Settings
 from mailroom.fake import FakeBackend
 from mailroom.indexer import PlaybookIndex
-from mailroom.llm import BackendError
+from mailroom.llm import BackendError, LLMResponse, ToolCallRequest
 from mailroom.models import TriageStatus
 from mailroom.queue import ActionQueue
 from mailroom.registry import Registry
@@ -371,3 +371,49 @@ def test_the_scans_force_the_security_procedure_into_the_retrieval(
     ]
     assert notes
     assert "PB-SEC-002" in notes[0]["procedures"]
+
+
+# -- the assistant echo ----------------------------------------------------
+
+
+def test_an_assistant_turn_with_tool_calls_carries_the_calls_and_the_plan():
+    response = LLMResponse(
+        text=None,
+        tool_calls=[
+            ToolCallRequest(
+                id="call-1", name="extract_fields", arguments_raw='{"issuer": "Revenu"}'
+            )
+        ],
+        tool_plan="read the fields, then queue the payment",
+    )
+    message = _assistant_message(response)
+    assert message["role"] == "assistant"
+    assert message["tool_calls"] == [
+        {
+            "id": "call-1",
+            "type": "function",
+            "function": {"name": "extract_fields", "arguments": '{"issuer": "Revenu"}'},
+        }
+    ]
+    assert message["tool_plan"] == "read the fields, then queue the payment"
+    assert "content" not in message
+
+
+def test_an_assistant_turn_with_tool_calls_omits_a_missing_plan():
+    response = LLMResponse(
+        text=None, tool_calls=[ToolCallRequest(id="call-2", name="file", arguments_raw="{}")]
+    )
+    message = _assistant_message(response)
+    assert "tool_calls" in message
+    assert "tool_plan" not in message
+
+
+def test_an_assistant_turn_without_tool_calls_carries_only_content():
+    message = _assistant_message(LLMResponse(text="Filed as information only."))
+    assert message == {"role": "assistant", "content": "Filed as information only."}
+    assert "tool_calls" not in message
+    assert "tool_plan" not in message
+
+
+def test_an_assistant_turn_with_no_text_and_no_calls_carries_empty_content():
+    assert _assistant_message(LLMResponse(text=None))["content"] == ""

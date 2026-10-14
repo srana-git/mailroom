@@ -7,6 +7,7 @@ from pathlib import Path
 
 from mailroom.audit import (
     AuditLog,
+    failed_model_calls,
     input_hash,
     model_time_ms,
     new_run_id,
@@ -170,3 +171,50 @@ def test_the_summary_reports_model_and_retrieval_time(tmp_path: Path):
     summary = summarize_run(read_run("run1", tmp_path / "runs"))
     assert summary["model_latency_ms"] == 1020
     assert summary["retrieval_latency_ms"] == 120
+
+
+# -- calls that failed for good --------------------------------------------
+
+
+def _call(attempt: int, status: str) -> dict:
+    return {"kind": "model_call", "operation": "chat", "attempt": attempt, "status": status}
+
+
+def test_a_retried_error_that_then_succeeds_is_not_a_failed_call():
+    assert failed_model_calls([_call(1, "error"), _call(2, "ok")]) == 0
+
+
+def test_an_error_on_the_last_attempt_of_a_call_is_a_failed_call():
+    events = [_call(1, "error"), _call(2, "error"), _call(3, "error"), _call(4, "error")]
+    events.append(_call(1, "ok"))  # the next call, which starts over at attempt 1
+    assert failed_model_calls(events) == 1
+
+
+def test_a_trailing_error_with_nothing_after_it_is_a_failed_call():
+    assert failed_model_calls([_call(1, "error")]) == 1
+
+
+def test_two_separate_calls_that_failed_for_good_are_counted_separately():
+    events = [
+        _call(1, "error"),
+        _call(2, "error"),
+        _call(1, "error"),
+        _call(2, "error"),
+        _call(3, "error"),
+        _call(4, "error"),
+    ]
+    assert failed_model_calls(events) == 2
+
+
+def test_only_model_call_events_are_counted():
+    events = [
+        {"kind": "note", "attempt": 1},
+        {"kind": "tool_call", "status": "error", "latency_ms": 3},
+        _call(1, "error"),
+    ]
+    assert failed_model_calls(events) == 1
+
+
+def test_a_run_with_no_model_calls_has_no_failed_calls():
+    assert failed_model_calls([]) == 0
+    assert failed_model_calls([{"kind": "note", "message": "hello"}]) == 0
