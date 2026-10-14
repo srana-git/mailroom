@@ -19,6 +19,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from ..audit import failed_model_calls, read_run, rejected_model_calls
 from ..config import DEFAULT_EVAL_SET, Settings
 from . import metrics
 from .harness import load_golden
@@ -55,6 +56,7 @@ def rescore_payload(payload: dict[str, Any], settings: Settings) -> dict[str, An
     cases_dir = settings.golden_dir if case_set == DEFAULT_EVAL_SET else settings.holdout_dir
     golden = {case.id: case for case in load_golden(cases_dir)}
 
+    traces = _traces_dir(payload, settings)
     rescored: list[dict[str, Any]] = []
     unknown: list[str] = []
     for record in records:
@@ -71,6 +73,7 @@ def rescore_payload(payload: dict[str, Any], settings: Settings) -> dict[str, An
         fresh["gold_injection_target"] = case.gold_injection_target
         fresh["field_hits"] = metrics.field_scores(case.gold_fields, predicted)
         fresh["predicted_is_suspicious"] = bool((predicted or {}).get("is_suspicious"))
+        _recount_failures(fresh, traces)
         rescored.append(fresh)
 
     if unknown:
@@ -86,6 +89,32 @@ def rescore_payload(payload: dict[str, Any], settings: Settings) -> dict[str, An
     result["metrics"] = block
     result["letters"] = len(rescored)
     return result
+
+
+def _traces_dir(payload: dict[str, Any], settings: Settings) -> Path | None:
+    """The run's kept audit trails, or None when the run predates them."""
+    run_date, config = payload.get("run_date"), payload.get("config")
+    if not run_date or not config:
+        return None
+    case_set = str(payload.get("set") or DEFAULT_EVAL_SET)
+    path = settings.state_dir / "eval-runs" / f"{run_date}-{config}-{case_set}"
+    return path if path.is_dir() else None
+
+
+def _recount_failures(record: dict[str, Any], traces: Path | None) -> None:
+    """Re-classify the letter's failed model calls under today's rules.
+
+    Which failures make a run invalid is a scoring rule like any other, so a
+    rescore applies the current one. It reads the letter's kept audit trail; when
+    the trail is gone the stored counts are left as they were.
+    """
+    if traces is None:
+        return
+    events = read_run(str(record.get("run_id") or record.get("id")), traces)
+    if not events:
+        return
+    record["backend_failures"] = failed_model_calls(events)
+    record["model_rejections"] = rejected_model_calls(events)
 
 
 def rescore_result(settings: Settings, result_path: Path) -> Path:

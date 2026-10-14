@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import uuid
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -22,6 +24,11 @@ from typing import Any
 # that never sees a letter, so it is excluded.
 MODEL_OPERATIONS = frozenset({"chat", "embed", "rerank"})
 RETRIEVAL_OPERATIONS = frozenset({"embed", "rerank"})
+
+# The statuses that mean the API rejected the agent's own request or the model's
+# tool call. The agent failed closed to a person, so these are scored, not
+# environment failures.
+REJECTED_STATUS_CODES = frozenset({400, 422})
 
 
 def new_run_id() -> str:
@@ -72,6 +79,7 @@ class AuditLog:
         input_hash_value: str | None = None,
         error: str | None = None,
         operation: str = "chat",
+        status_code: int | None = None,
     ) -> None:
         self.record(
             "model_call",
@@ -85,6 +93,7 @@ class AuditLog:
             tokens_out=tokens_out,
             input_hash=input_hash_value,
             error=error,
+            status_code=status_code,
         )
 
     def tool_call(
@@ -155,27 +164,71 @@ def model_time_ms(events: list[dict[str, Any]]) -> dict[str, int]:
     return {"model_latency_ms": model_ms, "retrieval_latency_ms": retrieval_ms}
 
 
-def failed_model_calls(events: list[dict[str, Any]]) -> int:
-    """Count the model calls that failed for good, not the failed attempts.
+def _final_error_status(event: dict[str, Any]) -> int | None:
+    """The HTTP status of a final model error, or None when it carries none.
+
+    New traces record `status_code` on the event. Old traces only hold the
+    exception text, which ends with the status ("UnprocessableEntityError: 422"),
+    so a trailing three-digit number is read off it instead. No code at all means
+    an environment failure: a network or timeout error never had a status.
+    """
+    status = event.get("status_code")
+    if isinstance(status, int):
+        return status
+    match = re.search(r"(\d{3})\s*$", str(event.get("error") or ""))
+    return int(match.group(1)) if match else None
+
+
+def _final_error_events(events: list[dict[str, Any]]) -> Iterator[dict[str, Any]]:
+    """Yield the model-call error events that are the last word on their call.
 
     One call runs its attempts in place, so its attempts are logged as a run of
     `model_call` events with rising attempt numbers: 1, 2, 3. A new call starts
     again at attempt 1. An error event is therefore the last word on a call when
     the next `model_call` event starts a new call (attempt 1), or when no later
     `model_call` event exists; an error followed by a higher attempt is a retry
-    that may still succeed. The count matters because a backend that gives up
-    leaves the letter looking like a normal `needs_human` result, so the run
-    status alone cannot show it.
+    that may still succeed.
     """
     calls = [event for event in events if event.get("kind") == "model_call"]
-    failures = 0
     for index, event in enumerate(calls):
         if event.get("status") != "error":
             continue
         following = calls[index + 1] if index + 1 < len(calls) else None
         if following is None or int(following.get("attempt") or 0) == 1:
-            failures += 1
-    return failures
+            yield event
+
+
+def failed_model_calls(events: list[dict[str, Any]]) -> int:
+    """Count the model calls that failed for good on the backend, not the retries.
+
+    A 400 or a 422 is excluded: the API rejected the agent's own request or the
+    model's tool call, so the agent failed closed to a person and the letter is a
+    scored outcome, not a broken measurement. Only environment failures count
+    here: quota, rate limit, auth, network, and server errors.
+
+    See `_final_error_events` for how a final error is told from a retry. The
+    count matters because a backend that gives up leaves the letter looking like
+    a normal `needs_human` result, so the run status alone cannot show it.
+    """
+    return sum(
+        1
+        for event in _final_error_events(events)
+        if _final_error_status(event) not in REJECTED_STATUS_CODES
+    )
+
+
+def rejected_model_calls(events: list[dict[str, Any]]) -> int:
+    """Count the final model errors the API laid at the agent's own door.
+
+    Status 400 or 422: a bad request the agent sent, or a tool call the model
+    generated that the API would not accept. The agent's fault, not the
+    environment's, so these are scored instead of invalidating the run.
+    """
+    return sum(
+        1
+        for event in _final_error_events(events)
+        if _final_error_status(event) in REJECTED_STATUS_CODES
+    )
 
 
 def summarize_run(events: list[dict[str, Any]]) -> dict[str, Any]:
@@ -204,6 +257,7 @@ def summarize_run(events: list[dict[str, Any]]) -> dict[str, Any]:
 
 __all__ = [
     "MODEL_OPERATIONS",
+    "REJECTED_STATUS_CODES",
     "RETRIEVAL_OPERATIONS",
     "AuditLog",
     "failed_model_calls",
@@ -211,5 +265,6 @@ __all__ = [
     "model_time_ms",
     "new_run_id",
     "read_run",
+    "rejected_model_calls",
     "summarize_run",
 ]

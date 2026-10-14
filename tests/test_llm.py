@@ -17,6 +17,7 @@ from mailroom.llm import (
     RateLimiter,
     ToolCallRequest,
     backoff_seconds,
+    rate_limit_backoff_seconds,
 )
 
 
@@ -31,6 +32,18 @@ class FakeClock:
 
     def sleep(self, seconds: float) -> None:
         self.now += seconds
+
+
+class RecordingClock(FakeClock):
+    """A fake clock that also keeps every sleep it was asked for, in order."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.sleeps: list[float] = []
+
+    def sleep(self, seconds: float) -> None:
+        self.sleeps.append(seconds)
+        super().sleep(seconds)
 
 
 def chat_response(text: str | None = "ok", tool_calls: list | None = None, tokens=(10, 5)):
@@ -156,6 +169,108 @@ def test_the_backoff_sleep_is_actually_taken(settings: Settings):
     backend = build_backend(settings, [error, error, chat_response("fine")], clock=clock)
     backend.chat(model="m", messages=[{"role": "user", "content": "hi"}])
     assert clock.now == pytest.approx(settings.retry_backoff_seconds * 3)
+
+
+# -- 429 backoff -----------------------------------------------------------
+
+
+def test_rate_limit_backoff_doubles_from_the_base_and_caps_at_a_minute():
+    assert rate_limit_backoff_seconds(15.0, 1) == 15.0
+    assert rate_limit_backoff_seconds(15.0, 2) == 30.0
+    assert rate_limit_backoff_seconds(15.0, 3) == 60.0
+    assert rate_limit_backoff_seconds(15.0, 4) == 60.0
+
+
+def test_a_429_waits_on_the_minute_not_the_short_retry_base(settings: Settings):
+    """The API limit is per minute, so the 5xx backoff would retry into it again."""
+    clock = RecordingClock()
+    backend = build_backend(
+        settings,
+        [
+            ApiError(status_code=429, body="slow down"),
+            ApiError(status_code=429, body="slow down"),
+            chat_response("fine"),
+        ],
+        clock=clock,
+    )
+    backend.chat(model="m", messages=[{"role": "user", "content": "hi"}])
+    assert clock.sleeps == [15.0, 30.0]
+
+
+def test_a_429_honours_a_numeric_retry_after_header(settings: Settings):
+    clock = RecordingClock()
+    backend = build_backend(
+        settings,
+        [
+            ApiError(status_code=429, headers={"Retry-After": "7"}, body="slow down"),
+            chat_response("fine"),
+        ],
+        clock=clock,
+    )
+    backend.chat(model="m", messages=[{"role": "user", "content": "hi"}])
+    assert clock.sleeps == [7.0]
+
+
+def test_a_429_retry_after_is_capped_at_a_minute(settings: Settings):
+    clock = RecordingClock()
+    backend = build_backend(
+        settings,
+        [
+            ApiError(status_code=429, headers={"retry-after": "999"}, body="slow down"),
+            chat_response("fine"),
+        ],
+        clock=clock,
+    )
+    backend.chat(model="m", messages=[{"role": "user", "content": "hi"}])
+    assert clock.sleeps == [60.0]
+
+
+def test_a_non_numeric_retry_after_falls_back_to_the_backoff(settings: Settings):
+    """An HTTP date is not a number of seconds, so it is ignored."""
+    clock = RecordingClock()
+    backend = build_backend(
+        settings,
+        [
+            ApiError(
+                status_code=429,
+                headers={"Retry-After": "Wed, 21 Oct 2026 07:28:00 GMT"},
+                body="slow down",
+            ),
+            chat_response("fine"),
+        ],
+        clock=clock,
+    )
+    backend.chat(model="m", messages=[{"role": "user", "content": "hi"}])
+    assert clock.sleeps == [15.0]
+
+
+def test_a_503_keeps_the_short_retry_backoff(settings: Settings):
+    clock = RecordingClock()
+    backend = build_backend(
+        settings,
+        [
+            ApiError(status_code=503, body="down"),
+            ApiError(status_code=503, body="down"),
+            chat_response("fine"),
+        ],
+        clock=clock,
+    )
+    backend.chat(model="m", messages=[{"role": "user", "content": "hi"}])
+    assert clock.sleeps == [0.5, 1.0]
+
+
+def test_the_error_audit_event_carries_the_status_code(settings: Settings):
+    directory = settings.runs_dir
+    log = AuditLog("run-429", directory)
+    backend = build_backend(
+        settings,
+        [ApiError(status_code=429, body="slow down"), chat_response("fine")],
+        audit=log,
+    )
+    backend.chat(model="m", messages=[{"role": "user", "content": "hi"}])
+    events = read_run("run-429", directory)
+    assert events[0]["status_code"] == 429
+    assert events[1]["status_code"] is None
 
 
 def test_every_attempt_is_written_to_the_audit_trail(settings: Settings):

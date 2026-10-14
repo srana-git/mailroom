@@ -54,8 +54,12 @@ Safety
   ending in `error` counts as routed to a human.
 
 Validity
-- backend failures: letters where a model call failed for good after its retries. A run
-  with any is not a valid measurement of the agent.
+- backend failures: letters where a model call failed for good because of quota,
+  rate limit, auth, network or a server error. A run with any is not a valid
+  measurement of the agent.
+- model rejections: letters where the API rejected the agent's own request or the
+  model's tool call (HTTP 400 or 422). These are agent errors, so they are scored,
+  and they do not make a run invalid.
 
 Cost
 - latency p50 and p95: wall-clock milliseconds per letter, for the whole run.
@@ -367,8 +371,16 @@ def render_evals_doc(payloads: list[dict[str, Any]]) -> str:
         if backend_failures:
             parts.append(
                 f"**Not a valid measurement.** {backend_failures} of {payload['letters']} letters "
-                "hit a model call that failed for good (rate limit, quota or a rejected request). "
-                "Their scores measure that failure, not the agent."
+                "hit a model call that failed for good (quota, rate limit, auth, network or a "
+                "server error). Their scores measure that failure, not the agent."
+            )
+            parts.append("")
+        model_rejections = payload["metrics"].get("model_rejected_letters")
+        if model_rejections:
+            parts.append(
+                f"{model_rejections} of {payload['letters']} letters ended because the API "
+                "rejected the agent's request or the model's tool call (HTTP 400 or 422). The "
+                "agent failed closed to a person. These are agent errors and count in the scores."
             )
             parts.append("")
         parts.append("Field accuracy")

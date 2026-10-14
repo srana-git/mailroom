@@ -54,51 +54,74 @@ flowchart LR
 
 ## Results
 
-All live runs, Cohere trial key, 2026-10-13. Every number is copied from a result file in
-`evals/results/`; [`docs/EVALS.md`](docs/EVALS.md) defines each metric.
+All live runs on Cohere: v1 and the first held-out run on a trial key (2026-10-13), v2 on a
+production key (2026-10-14). Every number is copied from a result file in `evals/results/`;
+[`docs/EVALS.md`](docs/EVALS.md) defines each metric.
 
-| Run | Letters | All fields exact | Core fields exact | Retrieval recall@3 | Phishing flagged | Injection resisted | Unapproved writes |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| v1, A (Command A+, Embed, Rerank), as first scored | 60 dev | 23% | – | 0.62 | 3 of 5 | 6 of 6 | 0 |
-| v1, A, re-scored under the v2 rules | 60 dev | 42% | 72% | 0.62 | 3 of 5 | 6 of 6 | 0 |
-| v1, B (no rerank), re-scored | 60 dev | 40% | 70% | 0.61 | 3 of 5 | 6 of 6 | 0 |
-| v1, C (Command R7B), re-scored | 60 dev | 17% | 38% | 0.55 | 1 of 5 | 6 of 6 | 0 |
-| **v2, A, held-out letters never used for tuning** | **20 held-out** | **45%** | **60%** | **0.70** | **2 of 2** | **2 of 2** | **0** |
+| Run | Letters | All fields exact | Core fields exact | Retrieval recall@3 | Phishing flagged | Injection resisted | Ambiguous sent to a person | Unapproved writes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| v1, A (Command A+, Embed, Rerank), as first scored | 60 dev | 23% | – | 0.62 | 3 of 5 | 6 of 6 | 4 of 5 | 0 |
+| v1, A, re-scored under the v2 rules | 60 dev | 42% | 72% | 0.62 | 3 of 5 | 6 of 6 | 4 of 5 | 0 |
+| v1, B (no rerank), re-scored | 60 dev | 40% | 70% | 0.61 | 3 of 5 | 6 of 6 | 3 of 5 | 0 |
+| v1, C (Command R7B), re-scored | 60 dev | 17% | 38% | 0.55 | 1 of 5 | 6 of 6 | 3 of 5 | 0 |
+| v2, A | 60 dev | 53% | 78% | 0.68 | 5 of 5 | 6 of 6 | 0 of 5 | 0 |
+| v2, B (no rerank) | 60 dev | 53% | 77% | 0.63 | 5 of 5 | 6 of 6 | 0 of 5 | 0 |
+| v2, C (Command R7B) | 60 dev | 12% | 33% | 0.70 | 4 of 5 | 6 of 6 | 2 of 5 | 0 |
+| **v2, A, held-out, run 1** | **20 held-out** | **45%** | **60%** | **0.70** | **2 of 2** | **2 of 2** | **1 of 2** | **0** |
+| **v2, A, held-out, run 2** | **20 held-out** | **50%** | **65%** | **0.75** | **2 of 2** | **2 of 2** | **1 of 2** | **0** |
 
 Read it this way:
 
-- **Most of the jump from 23% to 42% is the metric getting fairer, not the agent getting
-  better.** The re-scored v1 row shows that, which is why it is there.
-- **The held-out row is the honest v2 number.** It is a different, smaller set, so it is not a
-  like-for-like comparison with the dev rows. 20 letters is a small sample.
-- **Safety held in every run:** 0 unapproved writes in 200 live runs, because the queue and the
-  guards are code, not prompt.
-- **Rerank did not earn its place on this set:** recall@3 0.62 with it, 0.61 without. The
-  playbook is small (38 procedures); I would expect rerank to matter more on a larger one, but
-  that is a guess until it is measured.
-- **The small model costs real accuracy:** Command R7B lost about half the core-field accuracy
-  and caught 1 of 5 phishing letters by itself. The code guards still blocked every injection.
-- **Time per letter (held-out, v2):** model time p50 6.6 s; wall time p50 10.3 s. The gap is the
-  client-side rate limiter for the trial key.
+- **The held-out rows are the honest v2 numbers.** The dev rows were tuned against, so they
+  flatter v2. The held-out letters were committed before any v2 change and never used for
+  tuning. 20 letters is a small sample.
+- **Two runs of the same held-out set differ by about one letter in 20.** Temperature is 0, but
+  the runs still differ, and run 2 also includes the `tool_plan` fix below. Treat a 5-point
+  move on 20 letters as noise.
+- **Most of the v1 jump from 23% to 42% is the metric getting fairer, not the agent getting
+  better.** The re-scored v1 rows show that, which is why they are there.
+- **v2 broke something.** On the dev set v1 sent 4 of 5 ambiguous letters to a person; v2
+  sends none. The rules that made extraction more decisive also made the agent decisive where
+  it should have asked. The per-family breakdown in `docs/EVALS.md` caught it; the headline
+  numbers went up and hid it. This is the next fix.
+- **Safety held in every run:** 0 unapproved writes in 400 scored live runs, because the queue
+  and the guards are code, not prompt.
+- **Rerank helps a little, on this set:** recall@3 0.68 with it, 0.63 without (v2). In v1 the
+  gap was 0.62 against 0.61. The playbook is small (38 procedures); a larger one is the real
+  test.
+- **The small model loses at reading, not at finding.** Command R7B retrieved as well as
+  Command A+ (recall@3 0.70) but lost more than half the core-field accuracy and sent 35
+  letters to a person against a gold of 17. The code guards still blocked every injection.
+- **Time per letter (v2, dev, A):** model time p50 9.2 s; wall time p50 26 s. The gap is the
+  client-side rate limiter (15 requests a minute).
 
-What the held-out run still gets wrong:
+What the held-out runs still get wrong:
 
-- **It sends more letters to a person than the gold expects** (needs_human precision 0.50).
-  On 4 letters the agency is real but the account number on the letter is not in the
-  registry, so the payee guard sent the payment to a person. That is the guard working as
-  designed: a known name with a new account is how payment fraud looks. The held-out gold
-  expected a plain payment. I left the gold as written, because changing a held-out label
-  after seeing the result would defeat the held-out set.
+- **It sends some payments to a person that the gold expects to go straight to the queue.**
+  On these letters the agency is real but the account number is not in the registry, so the
+  payee guard routed the payment to a person. That is the guard working as designed: a known
+  name with a new account is how payment fraud looks. I left the held-out gold as written,
+  because changing a held-out label after seeing the result would defeat the held-out set.
 - **On both ambiguous letters it proposed a payment instead of escalating.** A person still
-  approves every payment, so nothing moves, but the agent's call was wrong.
-- **One letter failed on a request bug:** after a tool turn, the agent sent a `tool_plan` the
-  API rejected. Fixed: a tool turn now goes back as `tool_plan` plus `tool_calls` only.
+  approves every payment, so nothing moves, but the agent's call was wrong. Same cause as the
+  dev regression above.
+- **Run 1 lost one letter to a request bug:** after a tool turn, the agent sent a `tool_plan`
+  on a turn where the API does not accept it. Fixed in `8b58082`; in run 2 that letter
+  (`ocr-02`) proposes the payment.
 
-The v2 rerun of all three configs on the dev set ran out of the trial key's 1,000 calls per
+One v2 dev letter (`ocr-03`, config A) ended when the API returned HTTP 422 "invalid tool
+generation" for the model's tool call. The agent failed closed to a person. That is the
+model's own output, so it is scored as an agent miss, not treated as a broken run. The harness
+first counted it as a backend failure; the run as first written is kept in
+[`evals/results/v2-originals/`](evals/results/v2-originals/NOTE.md), and the rescore under the
+corrected rule changed no score, only the validity count.
+
+The first attempt at the v2 dev runs used the trial key and ran out of its 1,000 calls per
 month part way through. Those runs are kept in
 [`evals/results/invalid-2026-10-13-quota/`](evals/results/invalid-2026-10-13-quota/NOTE.md)
 and are not reported as results. The harness now catches this: it counts letters where a model
-call failed for good, marks the run as not valid, and stops after 3 in a row.
+call failed for good because of quota, rate limit, auth, network or a server error, marks the
+run as not valid, and stops after 3 in a row.
 
 ## What the first eval taught me
 
@@ -144,7 +167,7 @@ uv run mailroom queue                # what is waiting for a person
 uv run mailroom eval --config A      # score the golden set
 ```
 
-Offline, with no key: `uv run pytest -q` (389 tests, a fake backend replays recorded model
+Offline, with no key: `uv run pytest -q` (413 tests, a fake backend replays recorded model
 behaviour) or `uv run mailroom --backend fake triage …`.
 
 ## Design notes

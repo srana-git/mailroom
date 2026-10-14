@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from ..agent import Triager
-from ..audit import failed_model_calls, model_time_ms, read_run
+from ..audit import failed_model_calls, model_time_ms, read_run, rejected_model_calls
 from ..config import (
     DEFAULT_EVAL_SET,
     EVAL_CONFIGS,
@@ -184,10 +184,10 @@ class EvalHarness:
                 else:
                     consecutive_failures = 0
                 if consecutive_failures >= ABORT_AFTER_BACKEND_FAILURES:
-                    reason = str(record.get("reason") or "")[:300]
+                    detail = str(record.get("last_model_error") or record.get("reason") or "")
                     raise RuntimeError(
                         f"stopping the eval: {ABORT_AFTER_BACKEND_FAILURES} letters in a row "
-                        f"hit a model call that failed for good (last reason: {reason}). "
+                        f"hit a model call that failed for good (last error: {detail[:300]}). "
                         "The backend is down or out of quota; no results were written."
                     )
 
@@ -288,10 +288,27 @@ class EvalHarness:
             "model_latency_ms": timing["model_latency_ms"],
             "retrieval_latency_ms": timing["retrieval_latency_ms"],
             "backend_failures": failed_model_calls(events),
+            "model_rejections": rejected_model_calls(events),
+            "last_model_error": _last_model_error(events),
             "input_tokens": result.input_tokens,
             "output_tokens": result.output_tokens,
             "cost_usd": cost,
         }
+
+
+def _last_model_error(events: list[dict[str, Any]]) -> str | None:
+    """The error text of a letter's last failed model call, or None.
+
+    The run's own reason is written by the agent layer and can be a generic
+    wrapper. The audit trail holds the error the backend actually saw, which is
+    what a reader needs when the harness aborts. Truncated the way the abort
+    message is, so the record and the message carry the same string.
+    """
+    for event in reversed(events):
+        if event.get("kind") == "model_call" and event.get("status") == "error":
+            text = str(event.get("error") or "")
+            return text[:300] or None
+    return None
 
 
 def _metrics_block(per_letter: list[dict[str, Any]]) -> dict[str, Any]:

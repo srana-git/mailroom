@@ -454,3 +454,16 @@ def test_aggregate_counts_the_letters_whose_model_calls_failed_for_good():
 
 def test_a_record_without_a_backend_failures_key_counts_as_zero():
     assert metrics.aggregate([_record()])["backend_failed_letters"] == 0
+
+
+def test_aggregate_counts_the_letters_lost_to_a_rejected_request():
+    records = [
+        _record(model_rejections=2),
+        _record(model_rejections=0),
+        _record(model_rejections=1),
+    ]
+    assert metrics.aggregate(records)["model_rejected_letters"] == 2
+
+
+def test_a_record_without_a_model_rejections_key_counts_as_zero():
+    assert metrics.aggregate([_record()])["model_rejected_letters"] == 0

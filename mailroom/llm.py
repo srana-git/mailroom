@@ -22,6 +22,9 @@ from .config import EMBED_DIMENSION, Settings
 
 RETRYABLE_STATUS = frozenset({408, 409, 425, 429, 500, 502, 503, 504})
 RATE_LIMIT_WINDOW_SECONDS = 60.0
+# The longest a 429 may be waited out. Cohere's limit is per minute, so one
+# minute is the point past which waiting longer cannot help.
+RATE_LIMIT_MAX_WAIT_SECONDS = 60.0
 
 
 class BackendError(RuntimeError):
@@ -146,6 +149,16 @@ def backoff_seconds(base: float, attempt: int) -> float:
     return base * float(2 ** (attempt - 1))
 
 
+def rate_limit_backoff_seconds(base: float, attempt: int) -> float:
+    """Exponential backoff for a 429, capped at one minute.
+
+    Cohere's limit is per minute, so the short backoff used for a 5xx would
+    retry into the minute that was just spent and be refused again. The base
+    doubles per attempt and the wait never runs past `RATE_LIMIT_MAX_WAIT_SECONDS`.
+    """
+    return min(RATE_LIMIT_MAX_WAIT_SECONDS, base * float(2 ** (attempt - 1)))
+
+
 class CohereBackend:
     """Cohere ClientV2 with timeout, retries, rate limit and audit."""
 
@@ -205,6 +218,7 @@ class CohereBackend:
                         input_hash_value=hash_of,
                         error=f"{type(exc).__name__}: {status if status else exc}",
                         operation=kind,
+                        status_code=status,
                     )
                 last_error = exc
                 if not retryable or attempt >= attempts:
@@ -212,7 +226,7 @@ class CohereBackend:
                         f"{kind} failed after {attempt} attempt(s) on {model}: {exc}",
                         attempts=attempt,
                     ) from exc
-                self._sleep(backoff_seconds(self.settings.retry_backoff_seconds, attempt))
+                self._sleep(_retry_wait(self.settings, exc, attempt))
             else:
                 latency_ms = int((self._clock() - started) * 1000)
                 if self.audit is not None:
@@ -357,6 +371,41 @@ def _is_retryable(exc: Exception) -> bool:
     return isinstance(exc, httpx.HTTPError)
 
 
+def _retry_wait(settings: Settings, exc: Exception, attempt: int) -> float:
+    """Seconds to wait before retry `attempt` of a call that failed with `exc`.
+
+    A 429 waits long enough to leave the spent minute: the API's own
+    `Retry-After` when it sends one, else the doubling rate-limit backoff. Every
+    other retryable error keeps the short backoff.
+    """
+    if _status_of(exc) == 429:
+        header = _retry_after_seconds(exc)
+        if header is not None:
+            return min(RATE_LIMIT_MAX_WAIT_SECONDS, header)
+        return rate_limit_backoff_seconds(settings.rate_limit_backoff_seconds, attempt)
+    return backoff_seconds(settings.retry_backoff_seconds, attempt)
+
+
+def _retry_after_seconds(exc: Exception) -> float | None:
+    """The `Retry-After` header as a number of seconds, or None when unusable.
+
+    The header key is matched case-insensitively. A missing header, or one that
+    is not a plain number (an HTTP date, say), returns None so the caller falls
+    back to the doubling backoff.
+    """
+    headers = getattr(exc, "headers", None)
+    if not headers or not hasattr(headers, "items"):
+        return None
+    for key, value in headers.items():
+        if str(key).lower() != "retry-after":
+            continue
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
 def _text_of(content: Any) -> str | None:
     """Join the text blocks of a v2 chat message; the API returns a list, not a string."""
     if content is None or isinstance(content, str):
@@ -382,6 +431,7 @@ def _usage_of(response: Any) -> tuple[int, int]:
 
 
 __all__ = [
+    "RATE_LIMIT_MAX_WAIT_SECONDS",
     "RETRYABLE_STATUS",
     "Backend",
     "BackendError",
@@ -391,4 +441,5 @@ __all__ = [
     "RerankResult",
     "ToolCallRequest",
     "backoff_seconds",
+    "rate_limit_backoff_seconds",
 ]

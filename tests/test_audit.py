@@ -12,6 +12,7 @@ from mailroom.audit import (
     model_time_ms,
     new_run_id,
     read_run,
+    rejected_model_calls,
     summarize_run,
 )
 
@@ -60,6 +61,18 @@ def test_a_model_call_records_tokens_latency_and_retry_count(tmp_path: Path):
     assert event["retry_count"] == 2
     assert event["tokens_in"] == 1400
     assert event["latency_ms"] == 812
+
+
+def test_a_model_call_records_the_status_code_it_was_answered_with(tmp_path: Path):
+    log = AuditLog("run1", tmp_path / "runs")
+    log.model_call(model="m", attempt=1, latency_ms=4, status="error", status_code=429)
+    assert read_run("run1", tmp_path / "runs")[0]["status_code"] == 429
+
+
+def test_a_status_code_is_absent_when_no_answer_was_received(tmp_path: Path):
+    log = AuditLog("run1", tmp_path / "runs")
+    log.model_call(model="m", attempt=1, latency_ms=4, status="ok")
+    assert read_run("run1", tmp_path / "runs")[0]["status_code"] is None
 
 
 def test_a_tool_call_records_args_output_and_guard(tmp_path: Path):
@@ -176,8 +189,14 @@ def test_the_summary_reports_model_and_retrieval_time(tmp_path: Path):
 # -- calls that failed for good --------------------------------------------
 
 
-def _call(attempt: int, status: str) -> dict:
-    return {"kind": "model_call", "operation": "chat", "attempt": attempt, "status": status}
+def _call(attempt: int, status: str, **extra) -> dict:
+    return {
+        "kind": "model_call",
+        "operation": "chat",
+        "attempt": attempt,
+        "status": status,
+        **extra,
+    }
 
 
 def test_a_retried_error_that_then_succeeds_is_not_a_failed_call():
@@ -218,3 +237,55 @@ def test_only_model_call_events_are_counted():
 def test_a_run_with_no_model_calls_has_no_failed_calls():
     assert failed_model_calls([]) == 0
     assert failed_model_calls([{"kind": "note", "message": "hello"}]) == 0
+
+
+# -- calls the API rejected as the agent's own fault ------------------------
+
+
+def test_a_final_422_is_a_rejected_call_not_a_failed_one():
+    """A bad tool call the model produced is the agent's error, not a dead backend."""
+    events = [_call(1, "error", status_code=422)]
+    assert failed_model_calls(events) == 0
+    assert rejected_model_calls(events) == 1
+
+
+def test_a_final_400_is_a_rejected_call_not_a_failed_one():
+    events = [_call(1, "error", status_code=400)]
+    assert failed_model_calls(events) == 0
+    assert rejected_model_calls(events) == 1
+
+
+def test_a_final_429_is_a_failed_call_not_a_rejected_one():
+    events = [_call(1, "error", status_code=429)]
+    assert failed_model_calls(events) == 1
+    assert rejected_model_calls(events) == 0
+
+
+def test_an_old_style_422_error_text_is_classified_as_rejected():
+    """Traces written before `status_code` carried the status in the message."""
+    events = [_call(1, "error", error="UnprocessableEntityError: 422")]
+    assert failed_model_calls(events) == 0
+    assert rejected_model_calls(events) == 1
+
+
+def test_an_error_with_no_status_at_all_is_a_failed_call():
+    events = [_call(1, "error", error="ConnectError: boom")]
+    assert failed_model_calls(events) == 1
+    assert rejected_model_calls(events) == 0
+
+
+def test_a_retried_422_that_then_succeeds_is_neither():
+    events = [_call(1, "error", status_code=422), _call(2, "ok")]
+    assert failed_model_calls(events) == 0
+    assert rejected_model_calls(events) == 0
+
+
+def test_the_status_code_field_wins_over_the_error_text():
+    events = [_call(1, "error", status_code=429, error="UnprocessableEntityError: 422")]
+    assert failed_model_calls(events) == 1
+    assert rejected_model_calls(events) == 0
+
+
+def test_a_run_with_no_model_calls_has_no_rejected_calls():
+    assert rejected_model_calls([]) == 0
+    assert rejected_model_calls([{"kind": "note", "message": "hello"}]) == 0

@@ -422,6 +422,9 @@ def aggregate(per_letter: list[dict[str, Any]]) -> dict[str, Any]:
         "backend_failed_letters": sum(
             1 for record in per_letter if int(record.get("backend_failures") or 0) > 0
         ),
+        "model_rejected_letters": sum(
+            1 for record in per_letter if int(record.get("model_rejections") or 0) > 0
+        ),
         "errors": sum(
             1 for record in per_letter if record.get("status") == TriageStatus.ERROR.value
         ),

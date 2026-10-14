@@ -39,8 +39,12 @@ Safety
   ending in `error` counts as routed to a human.
 
 Validity
-- backend failures: letters where a model call failed for good after its retries. A run
-  with any is not a valid measurement of the agent.
+- backend failures: letters where a model call failed for good because of quota,
+  rate limit, auth, network or a server error. A run with any is not a valid
+  measurement of the agent.
+- model rejections: letters where the API rejected the agent's own request or the
+  model's tool call (HTTP 400 or 422). These are agent errors, so they are scored,
+  and they do not make a run invalid.
 
 Cost
 - latency p50 and p95: wall-clock milliseconds per letter, for the whole run.
@@ -138,9 +142,50 @@ comparable.
 
 | Config | Chat model | Rerank | Letters | Backend failures | All fields exact | Core fields exact | Letter type | Urgency +/-1 | Recall@3 | MRR | needs_human P | needs_human R | Unapproved writes | Injection resist | Phishing recall | p50 ms | Model p50 ms | p95 ms | Model p95 ms | Tokens/letter | Cost/letter | Set |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| A | command-a-plus-05-2026 | rerank-v4.0-pro | 20 | - | 45.0% | 60.0% | 75.0% | 90.0% | 0.700 | 0.692 | 0.500 | 0.833 | 0 | 100.0% | 100.0% | 10258 | 6592 | 52729 | 8786 | 11929 | n/a | holdout |
+| A | command-a-plus-05-2026 | rerank-v4.0-pro | 60 | 0 | 53.3% | 78.3% | 66.7% | 90.0% | 0.675 | 0.708 | 0.733 | 0.647 | 0 | 100.0% | 100.0% | 26096 | 9210 | 49454 | 12665 | 11271 | n/a | golden |
+| A | command-a-plus-05-2026 | rerank-v4.0-pro | 20 | 0 | 50.0% | 65.0% | 75.0% | 85.0% | 0.750 | 0.708 | 0.625 | 0.833 | 0 | 100.0% | 100.0% | 15930 | 8716 | 47839 | 12966 | 11734 | n/a | holdout |
+| B | command-a-plus-05-2026 | none | 60 | 0 | 53.3% | 76.7% | 65.0% | 90.0% | 0.625 | 0.664 | 0.917 | 0.647 | 0 | 100.0% | 100.0% | 23317 | 9867 | 39175 | 12584 | 11857 | n/a | golden |
+| C | command-r7b-12-2024 | rerank-v4.0-pro | 60 | 0 | 11.7% | 33.3% | 35.0% | 28.3% | 0.700 | 0.700 | 0.371 | 0.765 | 0 | 100.0% | 80.0% | 18364 | 8803 | 42209 | 11305 | 10508 | n/a | golden |
 
-### Config A - set holdout - 2026-10-13 (20 letters)
+### Config A - set golden - 2026-10-14 (60 letters)
+
+`command-a-plus-05-2026` chat, `embed-v4.0` embed, rerank `rerank-v4.0-pro`, limit all, rate limit 15/min, retrieval top 20 into 3.
+
+1 of 60 letters ended because the API rejected the agent's request or the model's tool call (HTTP 400 or 422). The agent failed closed to a person. These are agent errors and count in the scores.
+
+Field accuracy
+
+| Field | Accuracy |
+| --- | --- |
+| issuer | 98.3% |
+| letter_type | 66.7% |
+| language | 98.3% |
+| reference_number | 93.3% |
+| amount_due | 96.7% |
+| currency | 93.3% |
+| due_date | 88.3% |
+| required_action | 73.3% |
+| urgency | 90.0% |
+| is_suspicious | 98.3% |
+
+By letter family
+
+| Family | Letters | All fields exact | Action kind | needs_human gold | needs_human hit | Errors |
+| --- | --- | --- | --- | --- | --- | --- |
+| ambiguous | 5 | 0.0% | 20.0% | 5 | 0 | 0 |
+| final | 6 | 83.3% | 83.3% | 0 | 0 | 0 |
+| info | 6 | 66.7% | 100.0% | 0 | 0 | 0 |
+| injection | 6 | 83.3% | 83.3% | 6 | 6 | 0 |
+| ocr | 5 | 60.0% | 80.0% | 0 | 0 | 0 |
+| payment | 8 | 75.0% | 87.5% | 0 | 0 | 0 |
+| payroll | 5 | 0.0% | 60.0% | 1 | 0 | 0 |
+| phishing | 5 | 0.0% | 60.0% | 5 | 5 | 0 |
+| registry | 6 | 100.0% | 100.0% | 0 | 0 | 0 |
+| routine | 8 | 37.5% | 87.5% | 0 | 0 | 0 |
+
+Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.
+
+### Config A - set holdout - 2026-10-14 (20 letters)
 
 `command-a-plus-05-2026` chat, `embed-v4.0` embed, rerank `rerank-v4.0-pro`, limit all, rate limit 15/min, retrieval top 20 into 3.
 
@@ -151,12 +196,12 @@ Field accuracy
 | issuer | 100.0% |
 | letter_type | 75.0% |
 | language | 100.0% |
-| reference_number | 75.0% |
+| reference_number | 80.0% |
 | amount_due | 90.0% |
 | currency | 90.0% |
-| due_date | 90.0% |
+| due_date | 85.0% |
 | required_action | 75.0% |
-| urgency | 90.0% |
+| urgency | 85.0% |
 | is_suspicious | 100.0% |
 
 By letter family
@@ -164,14 +209,86 @@ By letter family
 | Family | Letters | All fields exact | Action kind | needs_human gold | needs_human hit | Errors |
 | --- | --- | --- | --- | --- | --- | --- |
 | ambiguous | 2 | 0.0% | 0.0% | 2 | 1 | 0 |
-| final | 2 | 100.0% | 100.0% | 0 | 0 | 0 |
+| final | 2 | 100.0% | 50.0% | 0 | 0 | 0 |
 | info | 2 | 100.0% | 100.0% | 0 | 0 | 0 |
-| injection | 2 | 50.0% | 50.0% | 2 | 2 | 0 |
-| ocr | 2 | 50.0% | 50.0% | 0 | 0 | 0 |
+| injection | 2 | 100.0% | 100.0% | 2 | 2 | 0 |
+| ocr | 2 | 50.0% | 100.0% | 0 | 0 | 0 |
 | payment | 2 | 100.0% | 100.0% | 0 | 0 | 0 |
 | payroll | 2 | 50.0% | 50.0% | 0 | 0 | 0 |
 | phishing | 2 | 0.0% | 100.0% | 2 | 2 | 0 |
 | registry | 2 | 0.0% | 100.0% | 0 | 0 | 0 |
 | routine | 2 | 0.0% | 100.0% | 0 | 0 | 0 |
+
+Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.
+
+### Config B - set golden - 2026-10-14 (60 letters)
+
+`command-a-plus-05-2026` chat, `embed-v4.0` embed, rerank `none`, limit all, rate limit 15/min, retrieval top 20 into 3.
+
+Field accuracy
+
+| Field | Accuracy |
+| --- | --- |
+| issuer | 100.0% |
+| letter_type | 65.0% |
+| language | 100.0% |
+| reference_number | 90.0% |
+| amount_due | 96.7% |
+| currency | 96.7% |
+| due_date | 86.7% |
+| required_action | 71.7% |
+| urgency | 90.0% |
+| is_suspicious | 100.0% |
+
+By letter family
+
+| Family | Letters | All fields exact | Action kind | needs_human gold | needs_human hit | Errors |
+| --- | --- | --- | --- | --- | --- | --- |
+| ambiguous | 5 | 0.0% | 0.0% | 5 | 0 | 0 |
+| final | 6 | 66.7% | 66.7% | 0 | 0 | 0 |
+| info | 6 | 66.7% | 83.3% | 0 | 0 | 0 |
+| injection | 6 | 83.3% | 83.3% | 6 | 6 | 0 |
+| ocr | 5 | 60.0% | 60.0% | 0 | 0 | 0 |
+| payment | 8 | 87.5% | 87.5% | 0 | 0 | 0 |
+| payroll | 5 | 0.0% | 40.0% | 1 | 0 | 0 |
+| phishing | 5 | 0.0% | 80.0% | 5 | 5 | 0 |
+| registry | 6 | 100.0% | 100.0% | 0 | 0 | 0 |
+| routine | 8 | 37.5% | 100.0% | 0 | 0 | 0 |
+
+Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.
+
+### Config C - set golden - 2026-10-14 (60 letters)
+
+`command-r7b-12-2024` chat, `embed-v4.0` embed, rerank `rerank-v4.0-pro`, limit all, rate limit 15/min, retrieval top 20 into 3.
+
+Field accuracy
+
+| Field | Accuracy |
+| --- | --- |
+| issuer | 45.0% |
+| letter_type | 35.0% |
+| language | 51.7% |
+| reference_number | 43.3% |
+| amount_due | 70.0% |
+| currency | 70.0% |
+| due_date | 65.0% |
+| required_action | 33.3% |
+| urgency | 28.3% |
+| is_suspicious | 88.3% |
+
+By letter family
+
+| Family | Letters | All fields exact | Action kind | needs_human gold | needs_human hit | Errors |
+| --- | --- | --- | --- | --- | --- | --- |
+| ambiguous | 5 | 0.0% | 0.0% | 5 | 2 | 0 |
+| final | 6 | 0.0% | 50.0% | 0 | 0 | 0 |
+| info | 6 | 16.7% | 66.7% | 0 | 0 | 0 |
+| injection | 6 | 16.7% | 0.0% | 6 | 6 | 0 |
+| ocr | 5 | 0.0% | 60.0% | 0 | 0 | 0 |
+| payment | 8 | 25.0% | 87.5% | 0 | 0 | 0 |
+| payroll | 5 | 0.0% | 0.0% | 1 | 0 | 0 |
+| phishing | 5 | 0.0% | 60.0% | 5 | 5 | 0 |
+| registry | 6 | 33.3% | 100.0% | 0 | 0 | 0 |
+| routine | 8 | 12.5% | 87.5% | 0 | 0 | 0 |
 
 Cost per letter is `n/a`: `PRICES_PER_MILLION` in `mailroom/config.py` is empty, so no rate is applied to the token counts above.

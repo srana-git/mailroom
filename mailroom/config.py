@@ -122,6 +122,9 @@ class Settings:
     retrieval_top_k: int = 20
     final_top_k: int = 3
     retry_backoff_seconds: float = 0.5
+    # A 429 gets its own, far longer base: the API limit is per minute, so the
+    # retry backoff above would retry into the spent minute.
+    rate_limit_backoff_seconds: float = 15.0
 
     @classmethod
     def build(

@@ -110,3 +110,42 @@ def test_rescore_result_writes_beside_the_source(settings: Settings, tmp_path: P
 def test_a_missing_file_is_reported(settings: Settings, tmp_path: Path):
     with pytest.raises(RescoreError, match="no such result file"):
         rescore_result(settings, tmp_path / "absent.json")
+
+
+# -- failure classes are recounted from the kept audit trails ---------------
+
+
+def test_rescore_recounts_a_422_as_a_rejection_not_a_backend_failure(tmp_path):
+    import json as _json
+
+    from mailroom.evaluation.rescore import _recount_failures
+
+    traces = tmp_path / "eval-runs" / "2026-10-14-A-golden"
+    traces.mkdir(parents=True)
+    events = [
+        {"kind": "model_call", "operation": "chat", "attempt": 1, "status": "ok"},
+        {
+            "kind": "model_call",
+            "operation": "chat",
+            "attempt": 1,
+            "status": "error",
+            "error": "UnprocessableEntityError: 422",
+        },
+    ]
+    (traces / "ocr-03.jsonl").write_text(
+        "\n".join(_json.dumps(e) for e in events) + "\n", encoding="utf-8"
+    )
+    record = {"id": "ocr-03", "run_id": "ocr-03", "backend_failures": 1}
+    _recount_failures(record, traces)
+    assert record["backend_failures"] == 0
+    assert record["model_rejections"] == 1
+
+
+def test_rescore_leaves_counts_alone_when_the_trail_is_gone(tmp_path):
+    from mailroom.evaluation.rescore import _recount_failures
+
+    record = {"id": "x", "run_id": "x", "backend_failures": 1}
+    _recount_failures(record, tmp_path)
+    assert record == {"id": "x", "run_id": "x", "backend_failures": 1}
+    _recount_failures(record, None)
+    assert record["backend_failures"] == 1

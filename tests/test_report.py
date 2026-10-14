@@ -218,6 +218,23 @@ def test_a_run_with_backend_failures_is_marked_not_a_valid_measurement():
     assert "measure that failure, not the agent" in text
 
 
+def test_a_run_with_rejected_requests_names_them_without_invalidating_it():
+    payload = _payload()
+    payload["metrics"]["model_rejected_letters"] = 1
+    text = report.render_evals_doc([payload])
+    assert (
+        "1 of 2 letters ended because the API rejected the agent's request or the model's "
+        "tool call (HTTP 400 or 422). The agent failed closed to a person. These are agent "
+        "errors and count in the scores."
+    ) in text
+    assert "Not a valid measurement" not in text
+
+
+def test_a_run_with_no_rejections_carries_no_rejection_sentence():
+    text = report.render_evals_doc([_payload()])
+    assert "ended because the API rejected" not in text
+
+
 def test_a_clean_run_carries_no_validity_warning():
     assert "Not a valid measurement" not in report.render_evals_doc([_payload()])
 
@@ -225,7 +242,14 @@ def test_a_clean_run_carries_no_validity_warning():
 def test_the_doc_lists_backend_failures_under_what_is_measured():
     text = report.render_evals_doc([_payload()])
     assert "Validity" in text
-    assert "letters where a model call failed for good after its retries" in text
+    assert "letters where a model call failed for good because of quota," in text
+    assert "rate limit, auth, network or a server error" in text
+
+
+def test_the_doc_lists_model_rejections_under_what_is_measured():
+    text = report.render_evals_doc([_payload()])
+    assert "model rejections: letters where the API rejected the agent's own request" in text
+    assert "they do not make a run invalid" in text
 
 
 def test_the_doc_explains_the_issuer_and_core_field_rules():
@@ -381,8 +405,13 @@ def test_the_harness_stops_when_three_letters_in_a_row_lose_their_model_call(tmp
     settings = _down_backend_settings(tmp_path)
     backend = _DownBackend()
     harness = EvalHarness(settings=settings, backend=backend, config=EVAL_CONFIGS["A"])
-    with pytest.raises(RuntimeError, match="in a row"):
+    with pytest.raises(RuntimeError, match="in a row") as excinfo:
         harness.run()
+    # The abort names the error the backend saw, not the agent layer's wrapper
+    # around it, so a reader can tell a quota from a bad request.
+    message = str(excinfo.value)
+    assert "TooManyRequestsError: 429" in message
+    assert "chat failed after" not in message
     assert not list(settings.results_dir.glob("*.json"))
 
 
